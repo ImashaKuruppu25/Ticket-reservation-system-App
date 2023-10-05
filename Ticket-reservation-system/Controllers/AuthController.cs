@@ -34,8 +34,9 @@ namespace Ticket_reservation_system.Controllers
 
             var user = new User
             {
-                UserName = request.UserName,
+                PreferredName = request.PreferredName,
                 NIC = request.NIC,
+                Email = request.Email,
                 HashedPassword = passwordHash,
                 Role = request.Role
 
@@ -52,7 +53,7 @@ namespace Ticket_reservation_system.Controllers
         public ActionResult<User> Login(LoginDto request)
         {
             var usersCollection = _mongoDBService.Users;
-            var user = usersCollection.Find(u => u.UserName == request.UserName).FirstOrDefault();
+            var user = usersCollection.Find(u => u.NIC == request.NIC).FirstOrDefault();
 
             if (user == null)
             {
@@ -75,7 +76,7 @@ namespace Ticket_reservation_system.Controllers
             // Create claims (user identity and authorization role)
             List<Claim> claims = new List<Claim>
             {
-                new Claim(ClaimTypes.Name, user.UserName),
+                new Claim(ClaimTypes.GivenName, user.PreferredName),
                 new Claim(ClaimTypes.PrimarySid , user.NIC),
                 new Claim(ClaimTypes.Role, "Admin")
             };

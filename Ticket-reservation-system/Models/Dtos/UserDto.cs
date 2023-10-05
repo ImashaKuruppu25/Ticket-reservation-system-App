@@ -2,8 +2,9 @@
 {
     public class UserDto
     {
-        public required string UserName { get; set; }
         public required string NIC { get; set; }
+        public required string PreferredName { get; set; }
+        public required string Email { get; set; }
         public required string Password { get; set; }
         public required string Role { get; set; }
 

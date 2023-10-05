@@ -9,11 +9,14 @@ namespace Ticket_reservation_system.Models
         [BsonRepresentation(BsonType.ObjectId)]
         public string Id { get; set; }
 
-        [BsonElement("FirstName")]
-        public string UserName { get; set; }
-
         [BsonElement("NIC")]
         public string NIC { get; set; }
+
+        [BsonElement("PreferredName")]
+        public string PreferredName { get; set; }
+
+        [BsonElement("Email")]
+        public string Email { get; set; }
 
         [BsonElement("HashedPassword")]
         public string HashedPassword { get; set; }
