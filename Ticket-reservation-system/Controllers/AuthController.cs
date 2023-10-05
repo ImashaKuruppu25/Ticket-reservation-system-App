@@ -91,7 +91,8 @@ namespace Ticket_reservation_system.Controllers
             {
                 new Claim(ClaimTypes.GivenName, user.PreferredName),
                 new Claim(ClaimTypes.PrimarySid , user.NIC),
-                new Claim(ClaimTypes.Role, user.Role)
+                new Claim(ClaimTypes.Role, user.Role),
+                new Claim(ClaimTypes.Email, user.Email),
             };
 
             // Create a security key from configuration

@@ -1,5 +1,6 @@
 ﻿using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
+using Ticket_reservation_system.Models.Dtos;
 
 namespace Ticket_reservation_system.Models
 {

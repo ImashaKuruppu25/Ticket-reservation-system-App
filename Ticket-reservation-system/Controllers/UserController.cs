@@ -5,6 +5,9 @@ using Ticket_reservation_system.Models.Dtos;
 using Ticket_reservation_system.Models;
 using Ticket_reservation_system.Services;
 using MongoDB.Driver;
+using System.Security.Claims;
+using MongoDB.Bson;
+using System.Text.RegularExpressions;
 
 namespace Ticket_reservation_system.Controllers
 {
@@ -22,8 +25,9 @@ namespace Ticket_reservation_system.Controllers
             _mongoDBService = mongoDBService;
         }
 
+        // POST: api/users/create
         [HttpPost("create")]
-        [Authorize(Roles = "Backoffice")]
+        [Authorize(Roles = "Backoffice,TravelAgent")]
         public ActionResult<User> CreateUser(UserDto request)
         {
             // Check if the NIC is exist
@@ -119,5 +123,142 @@ namespace Ticket_reservation_system.Controllers
             return Ok("User deactivated");
         }
 
+        // PUT: api/users/update/{nic}
+        [HttpPut("update/{nic}")]
+        [Authorize(Roles = "Backoffice,TravelAgent,Traveler")]
+        public ActionResult UpdateUserByNIC(string nic, UserDto updatedData)
+        {
+            var usersCollection = _mongoDBService.Users;
+            var filter = Builders<User>.Filter.Eq(u => u.NIC, nic);
+
+            // Check if the user exists
+            var existingUser = usersCollection.Find(filter).FirstOrDefault();
+            if (existingUser == null)
+            {
+                return NotFound("User not found");
+            }
+
+            // Update user details, e.g., username, NIC, and role
+            existingUser.NIC = updatedData.NIC;
+            existingUser.PreferredName = updatedData.PreferredName;
+            existingUser.Email = updatedData.Email;
+            existingUser.Role = updatedData.Role;
+
+            usersCollection.ReplaceOne(filter, existingUser);
+
+            return Ok("User updated");
+        }
+
+        // DELETE: api/users/delete/{nic}
+        [HttpDelete("delete/{nic}")]
+        [Authorize(Roles = "Backoffice,TravelAgent,Traveler")]
+        public ActionResult DeleteUserByNIC(string nic)
+        {
+            var usersCollection = _mongoDBService.Users;
+            var filter = Builders<User>.Filter.Eq(u => u.NIC, nic);
+
+            // Check if the user exists
+            var existingUser = usersCollection.Find(filter).FirstOrDefault();
+            if (existingUser == null)
+            {
+                return NotFound("User not found");
+            }
+
+            usersCollection.DeleteOne(filter);
+
+            return Ok("User deleted");
+        }
+
+        // GET: api/users/me
+        [HttpGet("me")]
+        [Authorize]
+        public ActionResult<User> GetUser()
+        {
+            // Get the user's claims from the token
+            var userNIC = User.FindFirst(ClaimTypes.PrimarySid);
+            var userNameClaim = User.FindFirst(ClaimTypes.GivenName);
+            var userRoleClaim = User.FindFirst(ClaimTypes.Role);
+            var userEmailClaim = User.FindFirst(ClaimTypes.Email);
+
+            if (userNIC == null || userRoleClaim == null )
+            {
+                return BadRequest("Invalid token claims");
+            }
+
+            // Create a user object using the token claims
+            var user = new User
+            {
+                NIC = userNIC.Value,
+                PreferredName = userNameClaim.Value,
+                Role = userRoleClaim.Value,
+                Email = userEmailClaim.Value
+               
+            };
+
+            return Ok(user);
+        }
+
+        // GET: api/users/travelers
+        [HttpGet("travelers")]
+        [Authorize(Roles = "Backoffice,TravelAgent")]
+        public ActionResult<IEnumerable<UserDto>> GetAllTravelers([FromQuery] int page = 1, [FromQuery] int pageSize = 10, [FromQuery] string search = null)
+        {
+            var usersCollection = _mongoDBService.Users;
+
+            // Define a filter to search by NIC or username (modify as needed)
+            var searchFilter = Builders<User>.Filter.Or(
+                Builders<User>.Filter.Regex(u => u.NIC, new MongoDB.Bson.BsonRegularExpression(search ?? "", "i")), // Case-insensitive NIC search
+                Builders<User>.Filter.Regex(u => u.PreferredName, new MongoDB.Bson.BsonRegularExpression(search ?? "", "i")) // Case-insensitive username search
+            );
+
+            // Define a filter to check the role is "Traveler"
+            var roleFilter = Builders<User>.Filter.Eq(u => u.Role, "Traveler");
+
+            // Combine the search and role filters using an AND operation
+            var filter = Builders<User>.Filter.And(searchFilter, roleFilter);
+
+            // Get the total count of users matching the filter
+            long totalCount = usersCollection.CountDocuments(filter);
+
+            // Calculate the total number of pages
+            int totalPages = (int)((totalCount + pageSize - 1) / pageSize);
+
+            // Ensure the requested page is within bounds
+            if (page < 1) page = 1;
+            if (page > totalPages) page = totalPages;
+
+            // Calculate skip and limit values for pagination
+            int skip = (page - 1) * pageSize;
+            int limit = pageSize;
+
+            // Retrieve the list of travelers based on the filter, skip, and limit
+            var travelers = usersCollection.Find(filter)
+                .Skip(skip)
+                .Limit(limit)
+                .ToList();
+
+            // Map the User objects to UserDto objects using an anonymous type
+            var travelerDtos = travelers.Select(user => new
+            {
+                user.Id,
+                user.NIC,
+                user.PreferredName,
+                user.Email,
+                user.Role,
+                user.Active
+            });
+
+            // Return the list of travelers along with pagination information
+            var result = new
+            {
+                Page = page,
+                PageSize = pageSize,
+                TotalCount = totalCount,
+                TotalPages = totalPages,
+                Data = travelerDtos
+            };
+
+            return Ok(result);
+        }
     }
 }
