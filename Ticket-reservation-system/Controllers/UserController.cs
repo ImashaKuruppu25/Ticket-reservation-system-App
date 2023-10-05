@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Ticket_reservation_system.Models.Dtos;
 using Ticket_reservation_system.Models;
 using Ticket_reservation_system.Services;
+using MongoDB.Driver;
 
 namespace Ticket_reservation_system.Controllers
 {
@@ -25,7 +26,13 @@ namespace Ticket_reservation_system.Controllers
         [Authorize(Roles = "Backoffice")]
         public ActionResult<User> CreateUser(UserDto request)
         {
-            // Validation logic (e.g., check if the username is unique)
+            // Check if the NIC is exist
+            var existingUser = _mongoDBService.Users.Find(u => u.NIC == request.NIC).FirstOrDefault();
+            if (existingUser != null)
+            {
+                // NIC is already in use, return a conflict response or handle it as needed
+                return Conflict("NIC is already taken.");
+            }
 
             string passwordHash = BCrypt.Net.BCrypt.HashPassword(request.Password);
 

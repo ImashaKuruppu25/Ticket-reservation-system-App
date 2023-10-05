@@ -30,6 +30,14 @@ namespace Ticket_reservation_system.Controllers
         [HttpPost("register")]
         public ActionResult<User> Register(UserDto request)
         {
+            // Check if the NIC is exist
+            var existingUser = _mongoDBService.Users.Find(u => u.NIC == request.NIC).FirstOrDefault();
+            if (existingUser != null)
+            {
+                // NIC is already in use, return a conflict response or handle it as needed
+                return Conflict("NIC is already taken.");
+            }
+
             string passwordHash = BCrypt.Net.BCrypt.HashPassword(request.Password);
 
             var user = new User
