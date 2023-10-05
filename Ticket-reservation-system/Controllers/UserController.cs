@@ -60,16 +60,63 @@ namespace Ticket_reservation_system.Controllers
         {
             var usersCollection = _mongoDBService.Users;
             var filter = Builders<User>.Filter.Eq(u => u.Id, userId);
+
+            // Check if the user exists
+            var existingUser = usersCollection.Find(filter).FirstOrDefault();
+            if (existingUser == null)
+            {
+                return NotFound("User not found");
+            }
+
+            // Check if the user is already deactivated
+            if (existingUser.Active)
+            {
+                return BadRequest("User is already activated");
+            }
+
             var update = Builders<User>.Update.Set(u => u.Active, true);
 
             var updateResult = usersCollection.UpdateOne(filter, update);
 
             if (updateResult.ModifiedCount == 0)
             {
-                return NotFound("User not found");
+                return NotFound("Something went wrong!");
             }
 
             return Ok("User reactivated");
+        }
+
+        // PUT: api/users/deactivate/{userId}
+        [HttpPut("deactivate/{userId}")]
+        [Authorize(Roles = "Backoffice")]
+        public ActionResult DeactivateUser(string userId)
+        {
+            var usersCollection = _mongoDBService.Users;
+            var filter = Builders<User>.Filter.Eq(u => u.Id, userId);
+
+            // Check if the user exists
+            var existingUser = usersCollection.Find(filter).FirstOrDefault();
+            if (existingUser == null)
+            {
+                return NotFound("User not found");
+            }
+
+            // Check if the user is already deactivated
+            if (!existingUser.Active)
+            {
+                return BadRequest("User is already deactivated");
+            }
+
+            var update = Builders<User>.Update.Set(u => u.Active, false);
+
+            var updateResult = usersCollection.UpdateOne(filter, update);
+
+            if (updateResult.ModifiedCount == 0)
+            {
+                return NotFound("Something went wrong!");
+            }
+
+            return Ok("User deactivated");
         }
 
     }
