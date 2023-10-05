@@ -53,5 +53,24 @@ namespace Ticket_reservation_system.Controllers
             return Ok(user);
         }
 
+        // PUT: api/users/reactivate/{userId}
+        [HttpPut("reactivate/{userId}")]
+        [Authorize(Roles = "Backoffice")]
+        public ActionResult ReactivateUser(string userId)
+        {
+            var usersCollection = _mongoDBService.Users;
+            var filter = Builders<User>.Filter.Eq(u => u.Id, userId);
+            var update = Builders<User>.Update.Set(u => u.Active, true);
+
+            var updateResult = usersCollection.UpdateOne(filter, update);
+
+            if (updateResult.ModifiedCount == 0)
+            {
+                return NotFound("User not found");
+            }
+
+            return Ok("User reactivated");
+        }
+
     }
 }
