@@ -201,14 +201,14 @@ namespace Ticket_reservation_system.Controllers
         // GET: api/users/travelers
         [HttpGet("travelers")]
         [Authorize(Roles = "Backoffice,TravelAgent")]
-        public ActionResult<IEnumerable<UserDto>> GetAllTravelers([FromQuery] int page = 1, [FromQuery] int pageSize = 10, [FromQuery] string search = null)
+        public ActionResult<IEnumerable<UserDto>> GetAllTravelers([FromQuery] int currentPage = 1, [FromQuery] int limit = 10, [FromQuery] string searchTerm = null)
         {
             var usersCollection = _mongoDBService.Users;
 
             // Define a filter to search by NIC or username (modify as needed)
             var searchFilter = Builders<User>.Filter.Or(
-                Builders<User>.Filter.Regex(u => u.NIC, new MongoDB.Bson.BsonRegularExpression(search ?? "", "i")), // Case-insensitive NIC search
-                Builders<User>.Filter.Regex(u => u.PreferredName, new MongoDB.Bson.BsonRegularExpression(search ?? "", "i")) // Case-insensitive username search
+                Builders<User>.Filter.Regex(u => u.NIC, new MongoDB.Bson.BsonRegularExpression(searchTerm ?? "", "i")), // Case-insensitive NIC search
+                Builders<User>.Filter.Regex(u => u.PreferredName, new MongoDB.Bson.BsonRegularExpression(searchTerm ?? "", "i")) // Case-insensitive username search
             );
 
             // Define a filter to check the role is "Traveler"
@@ -221,16 +221,15 @@ namespace Ticket_reservation_system.Controllers
             long totalCount = usersCollection.CountDocuments(filter);
 
             // Calculate the total number of pages
-            int totalPages = (int)((totalCount + pageSize - 1) / pageSize);
+            int totalPages = (int)((totalCount + limit - 1) / limit);
 
             // Ensure the requested page is within bounds
-            if (page < 1) page = 1;
-            if (page > totalPages) page = totalPages;
+            if (currentPage < 1) currentPage = 1;
+            if (currentPage > totalPages) currentPage = totalPages;
 
             // Calculate skip and limit values for pagination
-            int skip = (page - 1) * pageSize;
-            int limit = pageSize;
-
+            int skip = (currentPage - 1) * limit;
+            
             // Retrieve the list of travelers based on the filter, skip, and limit
             var travelers = usersCollection.Find(filter)
                 .Skip(skip)
@@ -251,8 +250,8 @@ namespace Ticket_reservation_system.Controllers
             // Return the list of travelers along with pagination information
             var result = new
             {
-                Page = page,
-                PageSize = pageSize,
+                Page = currentPage,
+                PageSize = limit,
                 TotalCount = totalCount,
                 TotalPages = totalPages,
                 Data = travelerDtos
