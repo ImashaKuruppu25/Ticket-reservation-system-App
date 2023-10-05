@@ -65,6 +65,11 @@ namespace Ticket_reservation_system.Controllers
                 return BadRequest("Password is wrong!");     
             }
 
+            if (user.Active == false)
+            {
+                return BadRequest("User account deactivate!");
+            }
+
 
             string token = CreateToken(user);
 
@@ -78,7 +83,7 @@ namespace Ticket_reservation_system.Controllers
             {
                 new Claim(ClaimTypes.GivenName, user.PreferredName),
                 new Claim(ClaimTypes.PrimarySid , user.NIC),
-                new Claim(ClaimTypes.Role, "Admin")
+                new Claim(ClaimTypes.Role, user.Role)
             };
 
             // Create a security key from configuration

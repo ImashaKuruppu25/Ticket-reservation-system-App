@@ -23,7 +23,9 @@ namespace Ticket_reservation_system.Models
 
         [BsonElement("Role")]
         public string Role { get; set; }
-       
+
+        [BsonElement("Active")]
+        public Boolean Active { get; set; } = true;
 
     }
 }
