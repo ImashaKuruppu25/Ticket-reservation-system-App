@@ -44,5 +44,75 @@ namespace Ticket_reservation_system.Controllers
             return Ok(newTrain);
         }
 
+        [HttpGet()]
+        [Authorize(Roles = "Backoffice")]
+        public ActionResult<IEnumerable<TrainDto>> GetAllTrains([FromQuery] int currentPage = 1, [FromQuery] int limit = 10, [FromQuery] string searchTerm = null)
+        {
+            var trainsCollection = _mongoDBService.Trains;
+
+            // Validate currentPage and limit
+            if (currentPage < 1)
+            {
+                currentPage = 1;
+            }
+
+            if (limit < 1)
+            {
+                limit = 10; // Set a default value if limit is invalid
+            }
+
+            // Define a filter to search by train name or description (modify as needed)
+            var searchFilter = Builders<Train>.Filter.Or(
+                Builders<Train>.Filter.Regex(t => t.Name, new MongoDB.Bson.BsonRegularExpression(searchTerm ?? "", "i")), // Case-insensitive train name search
+                Builders<Train>.Filter.Eq(t => t.Number, int.Parse(searchTerm)) // Case-insensitive description search
+            );
+
+            // Get the total count of trains matching the filter
+            long totalCount = trainsCollection.CountDocuments(searchFilter);
+
+            // Calculate the total number of pages
+            int totalPages = (int)((totalCount + limit - 1) / limit);
+
+            // Ensure the requested page is within bounds
+            if (currentPage > totalPages)
+            {
+                currentPage = totalPages;
+            }
+
+            // Calculate skip value, ensuring it's non-negative
+            int skip = (currentPage - 1) * limit;
+            if (skip < 0)
+            {
+                skip = 0;
+            }
+
+            // Retrieve the list of trains based on the filter and limit
+            var trains = trainsCollection.Find(searchFilter)
+                .Skip(Math.Max(0, skip)) // Ensure skip is non-negative
+                .Limit(limit)
+                .ToList();
+
+            // Map the Train objects to TrainDto objects using an anonymous type
+            var trainDtos = trains.Select(train => new TrainDto
+            {
+                Name = train.Name,
+                Number = train.Number
+                // Map other properties as needed
+            });
+
+            // Return the list of trains along with pagination information
+            var result = new
+            {
+                Page = currentPage,
+                PageSize = limit,
+                TotalCount = totalCount,
+                TotalPages = totalPages,
+                Data = trainDtos
+            };
+
+            return Ok(result);
+        }
+
+
     }
 }

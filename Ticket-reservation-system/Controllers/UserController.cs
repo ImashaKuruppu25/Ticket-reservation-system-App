@@ -232,7 +232,7 @@ namespace Ticket_reservation_system.Controllers
             
             // Retrieve the list of travelers based on the filter, skip, and limit
             var travelers = usersCollection.Find(filter)
-                .Skip(skip)
+                .Skip(Math.Max(0, skip))
                 .Limit(limit)
                 .ToList();
 
