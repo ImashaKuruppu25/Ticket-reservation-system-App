@@ -94,6 +94,7 @@ namespace Ticket_reservation_system.Controllers
             // Map the Train objects to TrainDto objects using an anonymous type
             var trainDtos = trains.Select(train => new TrainDto
             {
+                Id = train.Id,
                 Name = train.Name,
                 Number = train.Number
                 // Map other properties as needed
@@ -112,14 +113,14 @@ namespace Ticket_reservation_system.Controllers
             return Ok(result);
         }
 
-        [HttpDelete("{trainNumber}")]
+        [HttpDelete("{trainID}")]
         [Authorize(Roles = "Backoffice")]
-        public ActionResult DeleteTrainByNumber(int trainNumber)
+        public ActionResult DeleteTrainByNumber(string trainID)
         {
             var trainsCollection = _mongoDBService.Trains;
 
             // Define a filter to find the train by its number
-            var filter = Builders<Train>.Filter.Eq(t => t.Number, trainNumber);
+            var filter = Builders<Train>.Filter.Eq(t => t.Id, trainID);
 
             // Find and delete the train by its number
             var deleteResult = trainsCollection.DeleteOne(filter);
@@ -132,14 +133,14 @@ namespace Ticket_reservation_system.Controllers
             return Ok("Train deleted successfully");
         }
 
-        [HttpPut("{trainNumber}")]
+        [HttpPut("{trainID}")]
         [Authorize(Roles = "Backoffice")]
-        public ActionResult UpdateTrainByNumber(int trainNumber, [FromBody] TrainDto request)
+        public ActionResult UpdateTrainByNumber(string trainID, [FromBody] UpdateTrainDto request)
         {
             var trainsCollection = _mongoDBService.Trains;
 
             // Define a filter to find the train by its number
-            var filter = Builders<Train>.Filter.Eq(t => t.Number, trainNumber);
+            var filter = Builders<Train>.Filter.Eq(t => t.Id, trainID);
 
             // Find the train by its number
             var existingTrain = trainsCollection.Find(filter).FirstOrDefault();
@@ -162,6 +163,26 @@ namespace Ticket_reservation_system.Controllers
             }
 
             return Ok("Train updated successfully");
+        }
+
+        [HttpGet("all-names")]
+        [Authorize(Roles = "Backoffice")]
+        public ActionResult<IEnumerable<TrainDto>> GetAllTrainNamesAndNumbers()
+        {
+            var trainsCollection = _mongoDBService.Trains;
+
+            // Projection to select only Name and Number properties
+            var projection = Builders<Train>.Projection
+                .Exclude("_id")
+                .Include(t => t.Name)
+                .Include(t => t.Number);
+
+            // Retrieve all trains with only Name and Number properties
+            var trainNameAndNumberDtos = trainsCollection.Find(_ => true)
+                .Project<TrainDto>(projection)
+                .ToList();
+
+            return Ok(trainNameAndNumberDtos);
         }
     }
 }
