@@ -1,4 +1,6 @@
-﻿namespace Ticket_reservation_system.Models.Dtos
+﻿using MongoDB.Bson;
+
+namespace Ticket_reservation_system.Models.Dtos
 {
     public class TrainDto
     {

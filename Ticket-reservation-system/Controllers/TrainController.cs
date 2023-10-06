@@ -21,7 +21,7 @@ namespace Ticket_reservation_system.Controllers
 
         [HttpPost("create")]
         [Authorize(Roles = "Backoffice")]
-        public ActionResult<Train>CreateTrain(TrainDto request)
+        public ActionResult<Train>CreateTrain(UpdateTrainDto request)
         {
             // Check if a train with the same number already exists
             var existingTrain = _mongoDBService.Trains.Find(train => train.Number == request.Number).FirstOrDefault();
@@ -94,10 +94,10 @@ namespace Ticket_reservation_system.Controllers
             // Map the Train objects to TrainDto objects using an anonymous type
             var trainDtos = trains.Select(train => new TrainDto
             {
-                Id = train.Id,
+                Id = train.Id.ToString(),
                 Name = train.Name,
                 Number = train.Number
-                // Map other properties as needed
+
             });
 
             // Return the list of trains along with pagination information
@@ -171,18 +171,18 @@ namespace Ticket_reservation_system.Controllers
         {
             var trainsCollection = _mongoDBService.Trains;
 
-            // Projection to select only Name and Number properties
-            var projection = Builders<Train>.Projection
-                .Exclude("_id")
-                .Include(t => t.Name)
-                .Include(t => t.Number);
-
-            // Retrieve all trains with only Name and Number properties
-            var trainNameAndNumberDtos = trainsCollection.Find(_ => true)
-                .Project<TrainDto>(projection)
+            // Retrieve all trains
+            var trainDtos = trainsCollection.Find(_ => true)
+                .ToList()
+                .Select(train => new TrainDto
+                {
+                    Id = train.Id.ToString(),
+                    Name = train.Name,
+                    Number = train.Number
+                })
                 .ToList();
 
-            return Ok(trainNameAndNumberDtos);
+            return Ok(trainDtos);
         }
     }
 }
