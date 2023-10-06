@@ -19,11 +19,11 @@ jobs:
           dotnet-version: '7.0.x'
 
       - name: Restore
-        run: dotnet restore Ticket-reservation-system-App.sln
+        run: dotnet restore ./Ticket-reservation-system-App.sln
 
       - name: Build
-        run: dotnet build Ticket-reservation-system-App.sln --configuration Release --no-restore
+        run: dotnet build ./Ticket-reservation-system-App.sln --configuration Release --no-restore
 
       - name: Publish
-        run: dotnet publish Ticket-reservation-system-App.sln --configuration Release --no-build
+        run: dotnet publish ./Ticket-reservation-system-App.sln --configuration Release --no-build
         
