@@ -63,8 +63,7 @@ namespace Ticket_reservation_system.Controllers
 
             // Define a filter to search by train name or description (modify as needed)
             var searchFilter = Builders<Train>.Filter.Or(
-                Builders<Train>.Filter.Regex(t => t.Name, new MongoDB.Bson.BsonRegularExpression(searchTerm ?? "", "i")), // Case-insensitive train name search
-                Builders<Train>.Filter.Eq(t => t.Number, int.Parse(searchTerm)) // Case-insensitive description search
+                Builders<Train>.Filter.Regex(t => t.Name, new MongoDB.Bson.BsonRegularExpression(searchTerm ?? "", "i")) // Case-insensitive train name search
             );
 
             // Get the total count of trains matching the filter
