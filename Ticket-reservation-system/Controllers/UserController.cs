@@ -58,12 +58,12 @@ namespace Ticket_reservation_system.Controllers
         }
 
         // PUT: api/users/reactivate/{userId}
-        [HttpPut("reactivate/{userId}")]
+        [HttpPut("reactivate/{nic}")]
         [Authorize(Roles = "Backoffice")]
-        public ActionResult ReactivateUser(string userId)
+        public ActionResult ReactivateUser(string nic)
         {
             var usersCollection = _mongoDBService.Users;
-            var filter = Builders<User>.Filter.Eq(u => u.Id, userId);
+            var filter = Builders<User>.Filter.Eq(u => u.NIC, nic);
 
             // Check if the user exists
             var existingUser = usersCollection.Find(filter).FirstOrDefault();
@@ -91,12 +91,12 @@ namespace Ticket_reservation_system.Controllers
         }
 
         // PUT: api/users/deactivate/{userId}
-        [HttpPut("deactivate/{userId}")]
+        [HttpPut("deactivate/{nic}")]
         [Authorize(Roles = "Backoffice")]
-        public ActionResult DeactivateUser(string userId)
+        public ActionResult DeactivateUser(string nic)
         {
             var usersCollection = _mongoDBService.Users;
-            var filter = Builders<User>.Filter.Eq(u => u.Id, userId);
+            var filter = Builders<User>.Filter.Eq(u => u.NIC, nic);
 
             // Check if the user exists
             var existingUser = usersCollection.Find(filter).FirstOrDefault();
@@ -175,12 +175,12 @@ namespace Ticket_reservation_system.Controllers
         public ActionResult<User> GetUser()
         {
             // Get the user's claims from the token
-            var userNIC = User.FindFirst(ClaimTypes.PrimarySid);
+            var userNICClaim = User.FindFirst(ClaimTypes.PrimarySid);
             var userNameClaim = User.FindFirst(ClaimTypes.GivenName);
             var userRoleClaim = User.FindFirst(ClaimTypes.Role);
             var userEmailClaim = User.FindFirst(ClaimTypes.Email);
 
-            if (userNIC == null || userRoleClaim == null )
+            if (userNICClaim == null || userRoleClaim == null )
             {
                 return BadRequest("Invalid token claims");
             }
@@ -188,7 +188,7 @@ namespace Ticket_reservation_system.Controllers
             // Create a user object using the token claims
             var user = new User
             {
-                NIC = userNIC.Value,
+                NIC = userNICClaim.Value,
                 PreferredName = userNameClaim.Value,
                 Role = userRoleClaim.Value,
                 Email = userEmailClaim.Value
