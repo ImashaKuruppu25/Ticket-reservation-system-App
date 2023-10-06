@@ -112,6 +112,56 @@ namespace Ticket_reservation_system.Controllers
             return Ok(result);
         }
 
+        [HttpDelete("{trainNumber}")]
+        [Authorize(Roles = "Backoffice")]
+        public ActionResult DeleteTrainByNumber(int trainNumber)
+        {
+            var trainsCollection = _mongoDBService.Trains;
 
+            // Define a filter to find the train by its number
+            var filter = Builders<Train>.Filter.Eq(t => t.Number, trainNumber);
+
+            // Find and delete the train by its number
+            var deleteResult = trainsCollection.DeleteOne(filter);
+
+            if (deleteResult.DeletedCount == 0)
+            {
+                return NotFound("Train not found");
+            }
+
+            return Ok("Train deleted successfully");
+        }
+
+        [HttpPut("{trainNumber}")]
+        [Authorize(Roles = "Backoffice")]
+        public ActionResult UpdateTrainByNumber(int trainNumber, [FromBody] TrainDto request)
+        {
+            var trainsCollection = _mongoDBService.Trains;
+
+            // Define a filter to find the train by its number
+            var filter = Builders<Train>.Filter.Eq(t => t.Number, trainNumber);
+
+            // Find the train by its number
+            var existingTrain = trainsCollection.Find(filter).FirstOrDefault();
+
+            if (existingTrain == null)
+            {
+                return NotFound("Train not found");
+            }
+
+            // Update the train information based on the request
+            existingTrain.Name = request.Name;
+            existingTrain.Number = request.Number;
+
+            // Perform the update operation
+            var updateResult = trainsCollection.ReplaceOne(filter, existingTrain);
+
+            if (updateResult.ModifiedCount == 0)
+            {
+                return BadRequest("Train update failed");
+            }
+
+            return Ok("Train updated successfully");
+        }
     }
 }
