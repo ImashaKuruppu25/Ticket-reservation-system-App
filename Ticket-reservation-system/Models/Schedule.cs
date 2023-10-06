@@ -17,7 +17,11 @@ namespace Ticket_reservation_system.Models
         [BsonElement("Type")]
         public string Type { get; set; } // "express" or "slow"
 
+        [BsonElement("TrainName")]
+        public string TrainName { get; set; } 
+
         [BsonElement("TrainId")]
+        [BsonRepresentation(BsonType.ObjectId)]
         public string TrainId { get; set; }
 
         [BsonElement("Status")]
@@ -27,10 +31,10 @@ namespace Ticket_reservation_system.Models
         public string StartingStation { get; set; }
 
         [BsonElement("DepartureTime")]
-        public string DepartureTime { get; set; }
+        public TimeOnly DepartureTime { get; set; }
 
         [BsonElement("DepartureDate")]
-        public string DepartureDate { get; set; }
+        public DateOnly DepartureDate { get; set; }
 
         [BsonElement("Destinations")]
         public List<Destination> Destinations { get; set; }
@@ -45,7 +49,7 @@ namespace Ticket_reservation_system.Models
         public string Name { get; set; }
 
         [BsonElement("ReachTime")]
-        public string ReachTime { get; set; }
+        public TimeOnly ReachTime { get; set; }
 
         [BsonElement("Price")]
         public decimal Price { get; set; }

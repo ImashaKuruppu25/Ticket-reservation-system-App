@@ -19,5 +19,6 @@ namespace Ticket_reservation_system.Services
 
         public IMongoCollection<User> Users => _database.GetCollection<User>("Users");
         public IMongoCollection<Train> Trains => _database.GetCollection<Train>("Trains");
+        public IMongoCollection<Schedule> Schedules => _database.GetCollection<Schedule>("Schedules");
     }
 }
