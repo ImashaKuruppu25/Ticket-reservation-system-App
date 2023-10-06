@@ -1,0 +1,29 @@
+name: Publish 🚀
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+    - master
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: action/checkout@v3
+
+      - name: Setup .NET
+        uses: action/setup-dotnet@v3
+        with:
+          dotnet-version: '7.0.x'
+
+      - name: Restore
+        run: dotnet restore ./Ticket-reservation-system-App.sln
+
+      - name: Build
+        run: dotnet build ./Ticket-reservation-system-App.sln --configuration Release --no-restore
+
+      - name: Publish
+        run: dotnet publish ./Ticket-reservation-system-App.sln --configuration Release --no-build
+        
