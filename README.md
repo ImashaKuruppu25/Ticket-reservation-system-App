@@ -7,13 +7,13 @@
 📄 Swagger api doc = https://ticket-reservation-system20231007002452.azurewebsites.net/swagger/index.html
 
 ## Few UIs
-![image](https://github.com/ImashaKuruppu25/Ticket-reservation-system-App/assets/79103952/c451037a-3352-41bd-9915-115330abb3d3)
 ![image](https://github.com/ImashaKuruppu25/Ticket-reservation-system-App/assets/79103952/ee749d1a-5ac8-4024-8c70-640fdd772008)
-![image](https://github.com/ImashaKuruppu25/Ticket-reservation-system-App/assets/79103952/8735bbcc-394a-40db-b797-70ee90131bc0)
+![image](https://github.com/ImashaKuruppu25/Ticket-reservation-system-App/assets/79103952/c451037a-3352-41bd-9915-115330abb3d3)
 ![image](https://github.com/ImashaKuruppu25/Ticket-reservation-system-App/assets/79103952/d9f5fd2b-0812-4fbe-a91a-1e96bff625f1)
+![image](https://github.com/ImashaKuruppu25/Ticket-reservation-system-App/assets/79103952/8735bbcc-394a-40db-b797-70ee90131bc0)
+![image](https://github.com/ImashaKuruppu25/Ticket-reservation-system-App/assets/79103952/4850a329-0326-4a9e-8baf-57ec784ba610)
 ![image](https://github.com/ImashaKuruppu25/Ticket-reservation-system-App/assets/79103952/b7264b46-90cf-4006-9ecf-3340ee1909c5)
 ![image](https://github.com/ImashaKuruppu25/Ticket-reservation-system-App/assets/79103952/03dae200-c0ed-4b88-ac24-f8a63b86282a)
-![image](https://github.com/ImashaKuruppu25/Ticket-reservation-system-App/assets/79103952/4850a329-0326-4a9e-8baf-57ec784ba610)
 
 
 
