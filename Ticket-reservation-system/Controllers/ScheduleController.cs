@@ -66,6 +66,57 @@ namespace Ticket_reservation_system.Controllers
             return Ok(newSchedule);
         }
 
+        [HttpPut("{scheduleId}")]
+        [Authorize(Roles = "Backoffice")]
+        public ActionResult UpdateSchedule(string scheduleId, ScheduleDto request)
+        {
+            if (request == null)
+            {
+                return BadRequest("Invalid schedule data.");
+            }
 
+            // Check if the specified schedule exists
+            var schedulesCollection = _mongoDBService.Schedules;
+            var scheduleFilter = Builders<Schedule>.Filter.Eq(s => s.Id, scheduleId);
+            var existingSchedule = schedulesCollection.Find(scheduleFilter).FirstOrDefault();
+
+            if (existingSchedule == null)
+            {
+                return NotFound("The specified schedule does not exist.");
+            }
+
+            // Check if the associated train exists
+            var trainsCollection = _mongoDBService.Trains;
+            var trainFilter = Builders<Train>.Filter.Eq(t => t.Id, request.TrainId.ToString());
+            var existingTrain = trainsCollection.Find(trainFilter).FirstOrDefault();
+
+            if (existingTrain == null)
+            {
+                return BadRequest("The associated train does not exist.");
+            }
+
+            var destinations = request.Destinations.Select(destinationDto => new Destination
+            {
+                Name = destinationDto.Name,
+                ReachTime = destinationDto.ReachTime,
+                Price = destinationDto.Price
+            }).ToList();
+
+            // Update the existing schedule with the request data
+            existingSchedule.Type = request.Type;
+            existingSchedule.TrainId = request.TrainId;
+            existingSchedule.TrainName = request.TrainName;
+            existingSchedule.Status = request.Status;
+            existingSchedule.StartingStation = request.StartingStation;
+            existingSchedule.DepartureTime = request.DepartureTime;
+            existingSchedule.DepartureDate = request.DepartureDate;
+            existingSchedule.Destinations = destinations;
+            existingSchedule.AvailableTicketCount = request.AvailableTicketCount;
+
+            // Replace the existing schedule with the updated schedule
+            schedulesCollection.ReplaceOne(scheduleFilter, existingSchedule);
+
+            return Ok(existingSchedule);
+        }
     }
 }
