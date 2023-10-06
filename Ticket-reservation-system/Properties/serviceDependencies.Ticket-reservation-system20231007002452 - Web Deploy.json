@@ -1,0 +1,8 @@
+{
+  "dependencies": {
+    "apis1": {
+      "resourceId": "/subscriptions/[parameters('subscriptionId')]/resourceGroups/[parameters('resourceGroupName')]/providers/Microsoft.ApiManagement/service/Ticket-reservation-systemapi/apis/Ticket-reservation-system",
+      "type": "apis.azure"
+    }
+  }
+}
