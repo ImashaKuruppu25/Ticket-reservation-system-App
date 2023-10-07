@@ -1,6 +1,7 @@
 ﻿using Amazon.Runtime.Internal;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using MongoDB.Bson;
 using MongoDB.Driver;
 using Ticket_reservation_system.Models;
 using Ticket_reservation_system.Models.Dtos;
@@ -181,6 +182,81 @@ namespace Ticket_reservation_system.Controllers
             };
 
             return Ok(result);
+        }
+
+        [HttpGet("get-details")]
+        public IActionResult GetScheduleDetails([FromQuery] string from, [FromQuery] string to, [FromQuery] DateOnly date)
+        {
+            var schedulesCollection = _mongoDBService.Schedules;
+            var filterBuilder = Builders<Schedule>.Filter;
+
+            // Define a case-insensitive regex pattern for 'from' and 'to'
+            var caseInsensitivePattern = new BsonRegularExpression(from, "i");
+
+            // Define the filter to retrieve available schedules based on input parameters
+            var filter = filterBuilder.And(
+                filterBuilder.Eq(s => s.Status, "active"), // Filter for active schedules
+                filterBuilder.Gte(s => s.DepartureDate, date), // Filter for schedules on or after the input date
+                filterBuilder.Or(
+                    filterBuilder.Regex(s => s.StartingStation, caseInsensitivePattern), // Case-insensitive regex for 'StartingStation'
+                    filterBuilder.AnyEq(s => s.Destinations.Select(d => d.Name), from) // Filter for schedules with 'from' as a destination
+                ),
+                filterBuilder.Or(
+                    filterBuilder.Regex(s => s.StartingStation, caseInsensitivePattern), // Case-insensitive regex for 'StartingStation'
+                    filterBuilder.AnyEq(s => s.Destinations.Select(d => d.Name), to) // Filter for schedules with 'to' as a destination
+                ),
+                filterBuilder.Lt(s => s.DepartureDate, date.AddDays(1)) // Filter for schedules before the next day
+            );
+
+            var availableSchedules = schedulesCollection.Find(filter).ToList();
+
+            // Filter schedules to find valid routes from 'from' to 'to'
+            availableSchedules = availableSchedules.Where(s =>
+                (s.StartingStation.Equals(from, StringComparison.OrdinalIgnoreCase) || s.Destinations.Any(d => d.Name.Equals(from, StringComparison.OrdinalIgnoreCase))) && // Starting from 'from' or has 'from' as a destination
+                (s.StartingStation.Equals(to, StringComparison.OrdinalIgnoreCase) || s.Destinations.Any(d => d.Name.Equals(to, StringComparison.OrdinalIgnoreCase))) && // Starting from 'to' or has 'to' as a destination
+                s.Destinations.FindIndex(d => d.Name.Equals(from, StringComparison.OrdinalIgnoreCase)) < s.Destinations.FindIndex(d => d.Name.Equals(to, StringComparison.OrdinalIgnoreCase)) // 'from' comes before 'to' in destinations
+            ).ToList();
+
+            if (availableSchedules.Count == 0)
+            {
+                return NotFound("No available schedules found.");
+            }
+
+            // Calculate total price based on destinations' prices
+            var scheduleDetails = availableSchedules.Select(s =>
+            {
+                decimal scheduleTotalPrice = 0m;
+
+                if (s.StartingStation.Equals(from, StringComparison.OrdinalIgnoreCase))
+                {
+                    // 'from' station is the starting station, find 'to' in destinations
+                    var toDestination = s.Destinations.FirstOrDefault(d => d.Name.Equals(to, StringComparison.OrdinalIgnoreCase));
+                    if (toDestination != null)
+                    {
+                        scheduleTotalPrice = toDestination.Price;
+                    }
+                }
+                else
+                {
+                    // 'from' station is not the starting station
+                    var fromDestination = s.Destinations.FirstOrDefault(d => d.Name.Equals(from, StringComparison.OrdinalIgnoreCase));
+                    var toDestination = s.Destinations.FirstOrDefault(d => d.Name.Equals(to, StringComparison.OrdinalIgnoreCase));
+
+                    if (fromDestination != null && toDestination != null)
+                    {
+                        // Reduce the 'to' price by the 'from' price
+                        scheduleTotalPrice = toDestination.Price - fromDestination.Price;
+                    }
+                }
+
+                return new
+                {
+                    Schedule = s,
+                    TotalPrice = scheduleTotalPrice
+                };
+            }).ToList();
+
+            return Ok(scheduleDetails);
         }
     }
 }
