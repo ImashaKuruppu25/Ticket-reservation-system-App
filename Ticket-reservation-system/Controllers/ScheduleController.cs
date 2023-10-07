@@ -52,6 +52,7 @@ namespace Ticket_reservation_system.Controllers
             {
                 Type = request.Type,
                 TrainId = request.TrainId,
+                TrainName = request.TrainName,
                 Status = request.Status,
                 StartingStation = request.StartingStation,
                 DepartureTime = request.DepartureTime,
