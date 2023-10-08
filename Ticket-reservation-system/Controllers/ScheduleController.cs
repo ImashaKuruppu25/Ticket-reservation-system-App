@@ -293,5 +293,57 @@ namespace Ticket_reservation_system.Controllers
 
             return Ok(scheduleDetails);
         }
+
+        [HttpGet("today-onward-schedules")]
+        public ActionResult<IEnumerable<ScheduleResponseDto>> GetTodayOnwardSchedules([FromQuery] DateOnly date)
+        {
+            var schedulesCollection = _mongoDBService.Schedules;
+            var filterBuilder = Builders<Schedule>.Filter;
+
+            // Define the filter to retrieve active schedules with departure date on or after the input date
+            var filter = filterBuilder.And(
+                filterBuilder.Eq(s => s.Status, "active"),
+                filterBuilder.Gte(s => s.DepartureDate, date)
+            );
+
+            var availableSchedules = schedulesCollection.Find(filter).ToList();
+
+            // Create a list of ScheduleResponseDto objects based on the retrieved schedules
+            var scheduleResponseDtos = availableSchedules.Select(schedule =>
+            {
+                var lastDestination = schedule.Destinations.LastOrDefault();
+
+                return new ScheduleResponseDto
+                {
+                    TrainId = schedule.TrainId,
+                    ScheduleId = schedule.Id,
+                    From = schedule.StartingStation,
+                    To = lastDestination?.Name ?? schedule.StartingStation,
+                    DepartureTime = schedule.DepartureTime.ToString(),
+                    ArrivalTime = lastDestination?.ReachTime.ToString() ?? schedule.DepartureTime.ToString(),
+                    Duration = CalculateDuration(schedule.DepartureTime, lastDestination?.ReachTime ?? schedule.DepartureTime),
+                    Type = schedule.Type,
+                    Availability = GetAvailabilityStatus(schedule.AvailableTicketCount)
+                };
+            }).ToList();
+
+            return Ok(scheduleResponseDtos);
+        }
+
+        // Helper method to calculate duration
+        private string CalculateDuration(TimeOnly departureTime, TimeOnly arrivalTime)
+        {
+            // Calculate the duration based on departure and arrival times
+            var hours = arrivalTime.Hour - departureTime.Hour;
+            var minutes = arrivalTime.Minute - departureTime.Minute;
+
+            return $"{hours}h {minutes}m";
+        }
+
+        // Helper method to get availability status
+        private string GetAvailabilityStatus(int availableTicketCount)
+        {
+            return availableTicketCount > 0 ? availableTicketCount.ToString() : "Sold Out";
+        }
     }
 }
