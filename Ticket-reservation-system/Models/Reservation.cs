@@ -39,9 +39,9 @@ namespace Ticket_reservation_system.Models
         public List<int> Seat { get; set; }
 
         [BsonElement("TotalAmount")]
-        public string TotalAmount { get; set; }
+        public float TotalAmount { get; set; }
 
         [BsonElement("ReservedDate")]
-        public DateTime ReservedDate { get; set; }
+        public DateOnly ReservedDate { get; set; }
     }
 }

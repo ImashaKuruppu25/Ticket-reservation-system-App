@@ -27,7 +27,14 @@ namespace Ticket_reservation_system.Controllers
             }
 
             // Check reservation date within 30 days from the booking date
-            if ((request.ReservedDate - DateTime.Now).TotalDays > 30)
+            DateOnly currentDate = DateOnly.FromDateTime(DateTime.Now); // Current date
+            DateOnly thirtyDaysFromNow = currentDate.AddDays(30);
+
+            System.Diagnostics.Debug.WriteLine(currentDate);
+            System.Diagnostics.Debug.WriteLine(thirtyDaysFromNow);
+
+
+            if (request.departureDate > thirtyDaysFromNow)
             {
                 return BadRequest("Reservation date should be within 30 days from the booking date.");
             }
@@ -35,6 +42,7 @@ namespace Ticket_reservation_system.Controllers
             // Check maximum 4 reservations per userID
             var reservationsCollection = _mongoDBService.Reservation;
             var userReservations = reservationsCollection.Find(r => r.UserId == request.UserId).ToList();
+
 
             if (userReservations.Count >= 4)
             {
@@ -45,16 +53,16 @@ namespace Ticket_reservation_system.Controllers
             var newReservation = new Reservation
             {
                 TicketNo = Guid.NewGuid().ToString(),
+                ScheduleId = request.ScheduleId,
                 UserId = request.UserId,
                 From = request.From,
                 To = request.To,
-                ScheduleId = request.ScheduleId,
                 Adults = request.Adults,
                 Child = request.Child,
                 Class = request.Class,
-                Seat = new List<int>(), // seat selection logic here
-                TotalAmount = "0", // Calculate total amount
-                ReservedDate = DateTime.Now
+                Seat = new List<int>(request.Seat), // seat selection logic here
+                TotalAmount = request.TotalAmount,
+                ReservedDate = request.departureDate
             };
 
             // Insert the new reservation into the Reservations collection
