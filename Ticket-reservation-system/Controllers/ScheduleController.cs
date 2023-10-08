@@ -185,6 +185,40 @@ namespace Ticket_reservation_system.Controllers
             return Ok(result);
         }
 
+        [HttpGet("active-schedules")]
+        public ActionResult<IEnumerable<ScheduleDto>> GetAllActiveSchedules()
+        {
+            var schedulesCollection = _mongoDBService.Schedules;
+
+            // Define a filter to search for active schedules
+            var filter = Builders<Schedule>.Filter.Eq(s => s.Status, "active");
+
+            // Retrieve the list of active schedules based on the filter
+            var activeSchedules = schedulesCollection.Find(filter).ToList();
+
+            // Map the Schedule objects to ScheduleDto objects using an anonymous type
+            var scheduleDtos = activeSchedules.Select(schedule => new AllScheculeDto
+            {
+                Id = schedule.Id,
+                Type = schedule.Type,
+                TrainId = schedule.TrainId,
+                TrainName = schedule.TrainName,
+                Status = schedule.Status,
+                StartingStation = schedule.StartingStation,
+                DepartureTime = schedule.DepartureTime,
+                DepartureDate = schedule.DepartureDate,
+                Destinations = schedule.Destinations.Select(destination => new DestinationDto
+                {
+                    Name = destination.Name,
+                    ReachTime = destination.ReachTime,
+                    Price = destination.Price
+                }).ToList(),
+                AvailableTicketCount = schedule.AvailableTicketCount
+            });
+
+            return Ok(scheduleDtos);
+        }
+
         [HttpGet("get-details")]
         public IActionResult GetScheduleDetails([FromQuery] string from, [FromQuery] string to, [FromQuery] DateOnly date)
         {
