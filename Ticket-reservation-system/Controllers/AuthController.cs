@@ -81,7 +81,15 @@ namespace Ticket_reservation_system.Controllers
 
             string token = CreateToken(user);
 
-            return Ok(token);
+            var responseDto = new LoginResponseDto
+            {
+                PreferredName = user.PreferredName,
+                NIC = user.NIC,
+                UserID = user.Id,
+                Token = token
+            };
+
+            return Ok(responseDto);
         }
 
         private string CreateToken(User user)
