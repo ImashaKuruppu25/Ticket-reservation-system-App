@@ -17,7 +17,7 @@ namespace Ticket_reservation_system.Controllers
             _mongoDBService = mongoDBService;
         }
 
-        [HttpPost()]
+        [HttpPost("traveler-reservation")]
         public ActionResult CreateReservation(ReservationDto request)
         {
             // Perform input validation here

@@ -86,6 +86,7 @@ namespace Ticket_reservation_system.Controllers
                 PreferredName = user.PreferredName,
                 NIC = user.NIC,
                 UserID = user.Id,
+                Role = user.Role,
                 Token = token
             };
 
