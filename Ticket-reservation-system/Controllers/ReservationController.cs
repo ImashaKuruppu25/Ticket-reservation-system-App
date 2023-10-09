@@ -8,6 +8,7 @@ using static System.Runtime.InteropServices.JavaScript.JSType;
 using Microsoft.AspNetCore.Authorization;
 using System.Net.NetworkInformation;
 using Microsoft.AspNetCore.Identity;
+using MongoDB.Bson;
 
 namespace Ticket_reservation_system.Controllers
 {
@@ -97,7 +98,7 @@ namespace Ticket_reservation_system.Controllers
         }
 
         [HttpPost("Travel-agent-reservation")]
-        //[Authorize (Roles = "Travel-agent")]
+        [Authorize(Roles = "Travel-agent")]
         public ActionResult CreateTravelerReservation(TravelerReservationsDto request)
         {
             // Perform input validation here
@@ -149,8 +150,9 @@ namespace Ticket_reservation_system.Controllers
                 Class = request.Class,
                 Seat = new List<int>(request.Seat), // seat selection logic here
                 TotalAmount = request.TotalAmount,
-                ReservedDate = request.departureDate
-             
+                ReservedDate = request.departureDate,
+                Duration = request.Duration
+                
             };
 
 
@@ -255,6 +257,81 @@ namespace Ticket_reservation_system.Controllers
             var userReservations = _mongoDBService.Reservation.Find(filter).ToList();
 
             return Ok(userReservations);
+        }
+
+        [HttpGet("get-all")]
+        [Authorize(Roles = "Backoffice,TravelAgent")]
+        public ActionResult<IEnumerable<ReservationDto>> GetAllReservations(
+        [FromQuery] int currentPage = 1,
+        [FromQuery] int limit = 10,
+        [FromQuery] string searchTerm = null)
+        {
+            var reservationsCollection = _mongoDBService.Reservation;
+
+            // Define a filter for searching by relevant fields (modify as needed)
+            var searchFilter = Builders<Reservation>.Filter.Or(
+                Builders<Reservation>.Filter.Regex(r => r.From, new BsonRegularExpression(searchTerm ?? "", "i")), // Case-insensitive search by 'From' field
+                Builders<Reservation>.Filter.Regex(r => r.To, new BsonRegularExpression(searchTerm ?? "", "i")), // Case-insensitive search by 'To' field
+                Builders<Reservation>.Filter.Regex(r => r.TicketNo, new BsonRegularExpression(searchTerm ?? "", "i")) // Case-insensitive search by 'UserId' field
+            );
+
+            // Get the total count of reservations matching the filter
+            long totalCount = reservationsCollection.CountDocuments(searchFilter);
+
+            // Calculate the total number of pages
+            int totalPages = (int)((totalCount + limit - 1) / limit);
+
+            // Ensure the requested page is within bounds
+            if (currentPage < 1) currentPage = 1;
+            if (currentPage > totalPages) currentPage = totalPages;
+
+            // Calculate skip and limit values for pagination
+            int skip = (currentPage - 1) * limit;
+
+            // Retrieve the list of reservations based on the filter, skip, and limit
+            var reservations = reservationsCollection.Find(searchFilter)
+                .Skip(Math.Max(0, skip))
+                .Limit(limit)
+                .ToList();
+
+            // Map Reservation objects to ReservationDto objects using an anonymous type
+            var reservationDtos = reservations.Select(reservation =>  
+            {
+                // Fetch the schedule details based on the scheduleId in the reservation
+                var schedule = _mongoDBService.Schedules.Find(s => s.Id == reservation.ScheduleId).FirstOrDefault();
+                var user = _mongoDBService.Users.Find(u => u.Id == reservation.UserId).FirstOrDefault();
+
+                return new 
+                {
+                    reservationId = reservation.Id,
+                    userNIC = user.NIC, 
+                    trainName = schedule.TrainName, 
+                    departure = reservation.From, 
+                    arrival = reservation.To, 
+                    adults = reservation.Adults,
+                    child = reservation.Child,
+                    date = reservation.ReservedDate,
+                    ticketNo = reservation.TicketNo,
+                    trainType = schedule.Type, 
+                    classType = reservation.Class,
+                    seat = reservation.Seat,
+                    reservationDate = reservation.ReservedDate
+
+                };
+                
+            });
+
+            // Return the list of reservations along with pagination information
+            var result = new
+            {
+                Page = currentPage,
+                PageSize = limit,
+                TotalCount = totalCount,
+                TotalPages = totalPages,
+                Data = reservationDtos,
+            };
+
+            return Ok(result);
         }
 
         private object GetUserById(string userId)
