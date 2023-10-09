@@ -92,5 +92,69 @@ namespace Ticket_reservation_system.Controllers
 
             return Ok(userReservations);
         }
+
+        [HttpPost("Travel-agent-reservation")]
+        //[Authorize (Roles = "Travel-agent")]
+        public ActionResult CreateTravelerReservation(TravelerReservationsDto request)
+        {
+            // Perform input validation here
+            if (request == null)
+            {
+                return BadRequest("Invalid reservation data.");
+            }
+
+            // Check reservation date within 30 days from the booking date
+            DateOnly currentDate = DateOnly.FromDateTime(DateTime.Now); // Current date
+            DateOnly thirtyDaysFromNow = currentDate.AddDays(30);
+
+
+            if (request.departureDate > thirtyDaysFromNow)
+            {
+                return BadRequest("Reservation date should be within 30 days from the booking date.");
+            }
+            
+            // Get the user ID from the NIC
+            var usersCollection = _mongoDBService.Users;
+            var user =  usersCollection.Find(u => u.NIC == request.NIC).FirstOrDefault();
+           
+            if (user == null)
+            {
+                return BadRequest("User not found with the provided NIC.");
+            }
+
+            // Check maximum 4 reservations per userID
+            var reservationsCollection = _mongoDBService.Reservation;
+            var userReservations = reservationsCollection.Find(r => r.UserId == user.Id).ToList();
+
+
+            if (userReservations.Count >= 4)
+            {
+                return BadRequest("User have reached the maximum limit of 4 reservations.");
+            }
+
+            
+            // Create a new reservation from the request  data
+            var newReservation = new Reservation
+            {
+                TicketNo = Guid.NewGuid().ToString(),
+                ScheduleId = request.ScheduleId,
+                UserId = user.Id.ToString(),
+                From = request.From,
+                To = request.To,
+                Adults = request.Adults,
+                Child = request.Child,
+                Class = request.Class,
+                Seat = new List<int>(request.Seat), // seat selection logic here
+                TotalAmount = request.TotalAmount,
+                ReservedDate = request.departureDate
+             
+            };
+
+
+            // Insert the new reservation into the Reservations collection
+            reservationsCollection.InsertOne(newReservation);
+
+            return Ok(newReservation);
+        }
     }
 }
