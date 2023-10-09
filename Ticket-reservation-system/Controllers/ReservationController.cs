@@ -204,40 +204,6 @@ namespace Ticket_reservation_system.Controllers
             return Ok(responseDto);
         }
 
-        private object GetUserById(string userId)
-        {
-            // Implement logic to fetch user details by ID from the Users collection
-            var user = _mongoDBService.Users.Find(u => u.Id == userId).FirstOrDefault();
-
-            if (user == null)
-            {
-                return null; // User not found
-            }
-
-            var userData = new
-            {
-                _id = user.Id,
-                name = user.PreferredName,
-                NIC = user.NIC,
-                role = user.Role,
-                email = user.Email
-            };
-
-            return userData;
-        }
-        private Schedule GetScheduleById(string scheduleId)
-        {
-            // Implement logic to fetch the Schedule by ScheduleId from your collection
-            var schedule = _mongoDBService.Schedules.Find(s => s.Id == scheduleId).FirstOrDefault();
-            return schedule;
-        }
-        private string CalculateArrivalTime(Schedule schedule, string destination)
-        {
-            // Implement logic to calculate the ArrivalTime based on Schedule and destination
-            var destinationInfo = schedule.Destinations.FirstOrDefault(d => d.Name == destination);
-            return destinationInfo != null ? destinationInfo.ReachTime.ToString() : "";
-        }
-
         [HttpPatch("update-reservation")]
         public IActionResult UpdateReservation(string reservationId, ReservationUpdateDto request)
         {
@@ -286,6 +252,40 @@ namespace Ticket_reservation_system.Controllers
             var userReservations = _mongoDBService.Reservation.Find(filter).ToList();
 
             return Ok(userReservations);
+        }
+
+        private object GetUserById(string userId)
+        {
+            // Implement logic to fetch user details by ID from the Users collection
+            var user = _mongoDBService.Users.Find(u => u.Id == userId).FirstOrDefault();
+
+            if (user == null)
+            {
+                return null; // User not found
+            }
+
+            var userData = new
+            {
+                _id = user.Id,
+                name = user.PreferredName,
+                NIC = user.NIC,
+                role = user.Role,
+                email = user.Email
+            };
+
+            return userData;
+        }
+        private Schedule GetScheduleById(string scheduleId)
+        {
+            // Implement logic to fetch the Schedule by ScheduleId from your collection
+            var schedule = _mongoDBService.Schedules.Find(s => s.Id == scheduleId).FirstOrDefault();
+            return schedule;
+        }
+        private string CalculateArrivalTime(Schedule schedule, string destination)
+        {
+            // Implement logic to calculate the ArrivalTime based on Schedule and destination
+            var destinationInfo = schedule.Destinations.FirstOrDefault(d => d.Name == destination);
+            return destinationInfo != null ? destinationInfo.ReachTime.ToString() : "";
         }
     }
 }

@@ -13,6 +13,7 @@ namespace Ticket_reservation_system.Models.Dtos
         public required TimeOnly DepartureTime { get; set; }
         public required DateOnly DepartureDate { get; set; }
         public List<DestinationDto> Destinations { get; set; }
+        public string Duration { get; set; }
         public required int AvailableTicketCount { get; set; }
     }
 

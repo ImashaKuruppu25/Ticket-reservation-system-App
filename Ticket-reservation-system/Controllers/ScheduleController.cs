@@ -152,6 +152,7 @@ namespace Ticket_reservation_system.Controllers
                 .Limit(limit)
                 .ToList();
 
+            
             // Map the Schedule objects to ScheduleDto objects using an anonymous type
             var scheduleDtos = schedules.Select(schedule => new AllScheculeDto
             {
@@ -169,6 +170,7 @@ namespace Ticket_reservation_system.Controllers
                     ReachTime = destination.ReachTime,
                     Price = destination.Price
                 }).ToList(),
+                Duration= CalculateDuration(schedule.DepartureTime, schedule.Destinations.LastOrDefault()?.ReachTime ?? schedule.DepartureTime),
                 AvailableTicketCount = schedule.AvailableTicketCount
             });
 
@@ -261,6 +263,7 @@ namespace Ticket_reservation_system.Controllers
             var scheduleDetails = availableSchedules.Select(s =>
             {
                 decimal scheduleTotalPrice = 0m;
+                var destinationTime = s.Destinations.LastOrDefault().ReachTime;
 
                 if (s.StartingStation.Equals(from, StringComparison.OrdinalIgnoreCase))
                 {
@@ -269,6 +272,7 @@ namespace Ticket_reservation_system.Controllers
                     if (toDestination != null)
                     {
                         scheduleTotalPrice = toDestination.Price;
+                        destinationTime = toDestination.ReachTime;
                     }
                 }
                 else
@@ -281,13 +285,19 @@ namespace Ticket_reservation_system.Controllers
                     {
                         // Reduce the 'to' price by the 'from' price
                         scheduleTotalPrice = toDestination.Price - fromDestination.Price;
+                        destinationTime = toDestination.ReachTime;
                     }
                 }
+
+                // Calculate duration
+                var duration = CalculateDuration(s.DepartureTime, destinationTime);
+
 
                 return new
                 {
                     Schedule = s,
-                    TotalPrice = scheduleTotalPrice
+                    TotalPrice = scheduleTotalPrice,
+                    Duration = duration
                 };
             }).ToList();
 
