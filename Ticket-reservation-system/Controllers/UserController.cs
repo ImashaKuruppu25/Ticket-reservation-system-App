@@ -176,26 +176,36 @@ namespace Ticket_reservation_system.Controllers
         {
             // Get the user's claims from the token
             var userNICClaim = User.FindFirst(ClaimTypes.PrimarySid);
-            var userNameClaim = User.FindFirst(ClaimTypes.GivenName);
-            var userRoleClaim = User.FindFirst(ClaimTypes.Role);
-            var userEmailClaim = User.FindFirst(ClaimTypes.Email);
+            
 
-            if (userNICClaim == null || userRoleClaim == null )
+            if (userNICClaim == null  )
             {
                 return BadRequest("Invalid token claims");
             }
 
-            // Create a user object using the token claims
-            var user = new User
+            // Retrieve the user details from the database based on the NIC claim
+            var usersCollection = _mongoDBService.Users;
+            var user = usersCollection.Find(u => u.NIC == userNICClaim.Value).FirstOrDefault();
+
+            if (user == null)
             {
-                NIC = userNICClaim.Value,
-                PreferredName = userNameClaim.Value,
-                Role = userRoleClaim.Value,
-                Email = userEmailClaim.Value
-               
+                return NotFound("User not found");
+            }
+
+            // Create a user object using the retrieved user details
+            var userResponse = new User
+            {
+                Id = user.Id,
+                NIC = user.NIC,
+                PreferredName = user.PreferredName,
+                Email = user.Email,
+                Role = user.Role,
+                HashedPassword = user.HashedPassword,
+                Active = user.Active
             };
 
-            return Ok(user);
+
+            return Ok(userResponse);
         }
 
         // GET: api/users/travelers
