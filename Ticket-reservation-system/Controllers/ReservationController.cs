@@ -88,7 +88,6 @@ namespace Ticket_reservation_system.Controllers
                 Builders<Reservation>.Filter.Gte(r => r.ReservedDate, currentDate) // Filter by today onwards
             );
 
-            System.Diagnostics.Debug.WriteLine(userId);
             // Retrieve the filtered reservations
             var userReservations = _mongoDBService.Reservation.Find(filter).ToList();
 
@@ -267,6 +266,26 @@ namespace Ticket_reservation_system.Controllers
             reservationsCollection.ReplaceOne(r => r.Id == reservationId, reservation);
 
             return Ok(reservation); 
+        }
+
+        [HttpGet("reservations-history")]
+        [Authorize]
+        public ActionResult<IEnumerable<Reservation>> GetUserReservationsBeforeToday()
+        {
+            // Get the current date as a DateOnly object
+            DateOnly currentDate = DateOnly.FromDateTime(DateTime.Now);
+            string userId = User.FindFirstValue(ClaimTypes.Sid);
+
+            // Define a filter to get reservations for the current user with a reserved date before today
+            var filter = Builders<Reservation>.Filter.And(
+                Builders<Reservation>.Filter.Eq(r => r.UserId, userId),
+                Builders<Reservation>.Filter.Lt(r => r.ReservedDate, currentDate) // Filter by before today
+            );
+
+            // Retrieve the filtered reservations
+            var userReservations = _mongoDBService.Reservation.Find(filter).ToList();
+
+            return Ok(userReservations);
         }
     }
 }
