@@ -6,6 +6,8 @@ using MongoDB.Driver;
 using System.Security.Claims;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 using Microsoft.AspNetCore.Authorization;
+using System.Net.NetworkInformation;
+using Microsoft.AspNetCore.Identity;
 
 namespace Ticket_reservation_system.Controllers
 {
@@ -155,6 +157,86 @@ namespace Ticket_reservation_system.Controllers
             reservationsCollection.InsertOne(newReservation);
 
             return Ok(newReservation);
+        }
+
+        [HttpGet()]
+        public ActionResult<ReservationResponseDto> GetReservationById(string reservationId)
+        {
+           
+            // Find the reservation by ID in the Reservations collection
+            var reservation = _mongoDBService.Reservation.Find(r => r.Id == reservationId).FirstOrDefault();
+
+            if (reservation == null)
+            {
+                return NotFound("Reservation not found.");
+            }
+
+            // Retrieve the associated schedule using ScheduleId
+            var schedule = GetScheduleById(reservation.ScheduleId);
+
+            if (schedule == null)
+            {
+                return BadRequest("Schedule not found.");
+            }
+
+            // Calculate the ArrivalTime based on destination times
+            string arrivalTime = CalculateArrivalTime(schedule, reservation.To);
+
+           
+            // Create a ReservationResponseDto based on the reservation data
+            var responseDto = new ReservationResponseDto
+            {
+                From = reservation.From,
+                To = reservation.To,
+                ReservedDate = reservation.ReservedDate,
+                DepartureTime = schedule.DepartureTime,
+                ArrivalTime = arrivalTime,
+                User = GetUserById(reservation.UserId), // Implement GetUserById to fetch user details by ID
+                TicketNumber = reservation.TicketNo,
+                Passenger = new PassengerInfo
+                {
+                    Adult = reservation.Adults,
+                    Child = reservation.Child,
+                    Seat = reservation.Seat,
+                    Class = reservation.Class
+                }
+            };
+
+            return Ok(responseDto);
+        }
+
+        private object GetUserById(string userId)
+        {
+            // Implement logic to fetch user details by ID from the Users collection
+            var user = _mongoDBService.Users.Find(u => u.Id == userId).FirstOrDefault();
+
+            if (user == null)
+            {
+                return null; // User not found
+            }
+
+            var userData = new
+            {
+                _id = user.Id,
+                name = user.PreferredName,
+                NIC = user.NIC,
+                role = user.Role,
+                email = user.Email
+            };
+
+            return userData;
+        }
+        private Schedule GetScheduleById(string scheduleId)
+        {
+            // Implement logic to fetch the Schedule by ScheduleId from your collection
+            var schedule = _mongoDBService.Schedules.Find(s => s.Id == scheduleId).FirstOrDefault();
+            return schedule;
+        }
+        private string CalculateArrivalTime(Schedule schedule, string destination)
+        {
+            // Implement logic to calculate the ArrivalTime based on Schedule and destination
+            var destinationInfo = schedule.Destinations.FirstOrDefault(d => d.Name == destination);
+            return destinationInfo != null ? destinationInfo.ReachTime.ToString() : "";
         }
     }
 }
