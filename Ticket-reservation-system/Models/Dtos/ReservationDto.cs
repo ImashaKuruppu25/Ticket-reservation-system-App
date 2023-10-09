@@ -13,5 +13,6 @@
         public required string Class { get; set; }
         public required List<int> Seat { get; set; }
         public required float TotalAmount { get; set; }
+        public required string Duration { get; set; }
     }
 }

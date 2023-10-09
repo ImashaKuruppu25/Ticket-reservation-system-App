@@ -1,6 +1,6 @@
 ﻿using Ticket_reservation_system.Models;
 
-namespace Ticket_reservation_system
+namespace Ticket_reservation_system.Models.Dtos
 {
     public class ReservationResponseDto
     {
@@ -12,6 +12,7 @@ namespace Ticket_reservation_system
         public object User { get; set; }
         public string TicketNumber { get; set; }
         public PassengerInfo Passenger { get; set; }
+        public string Duration { get; set; }
     }
     public class PassengerInfo
     {

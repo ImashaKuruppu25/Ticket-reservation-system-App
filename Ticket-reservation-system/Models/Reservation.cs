@@ -43,5 +43,8 @@ namespace Ticket_reservation_system.Models
 
         [BsonElement("ReservedDate")]
         public DateOnly ReservedDate { get; set; }
+
+        [BsonElement("Duration")]
+        public string Duration { get; set; }
     }
 }

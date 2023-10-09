@@ -64,7 +64,9 @@ namespace Ticket_reservation_system.Controllers
                 Class = request.Class,
                 Seat = new List<int>(request.Seat), // seat selection logic here
                 TotalAmount = request.TotalAmount,
-                ReservedDate = request.departureDate
+                ReservedDate = request.departureDate,
+                Duration=request.Duration
+               
             };
 
             // Insert the new reservation into the Reservations collection
@@ -192,6 +194,7 @@ namespace Ticket_reservation_system.Controllers
                 ArrivalTime = arrivalTime,
                 User = GetUserById(reservation.UserId), // Implement GetUserById to fetch user details by ID
                 TicketNumber = reservation.TicketNo,
+                Duration = reservation.Duration,
                 Passenger = new PassengerInfo
                 {
                     Adult = reservation.Adults,
@@ -287,5 +290,6 @@ namespace Ticket_reservation_system.Controllers
             var destinationInfo = schedule.Destinations.FirstOrDefault(d => d.Name == destination);
             return destinationInfo != null ? destinationInfo.ReachTime.ToString() : "";
         }
+
     }
 }
