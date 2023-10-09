@@ -3,6 +3,8 @@ using Ticket_reservation_system.Models.Dtos;
 using Ticket_reservation_system.Models;
 using Ticket_reservation_system.Services;
 using MongoDB.Driver;
+using System.Security.Claims;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Ticket_reservation_system.Controllers
 {
@@ -29,9 +31,6 @@ namespace Ticket_reservation_system.Controllers
             // Check reservation date within 30 days from the booking date
             DateOnly currentDate = DateOnly.FromDateTime(DateTime.Now); // Current date
             DateOnly thirtyDaysFromNow = currentDate.AddDays(30);
-
-            System.Diagnostics.Debug.WriteLine(currentDate);
-            System.Diagnostics.Debug.WriteLine(thirtyDaysFromNow);
 
 
             if (request.departureDate > thirtyDaysFromNow)
@@ -71,6 +70,24 @@ namespace Ticket_reservation_system.Controllers
             return Ok(newReservation);
 
         }
-       
+
+        [HttpGet("user-reservations-today-onwards")]
+        public ActionResult<IEnumerable<Reservation>> GetUserReservationsTodayOnwards()
+        {
+            // Get the current date as a DateOnly object
+            DateOnly currentDate = DateOnly.FromDateTime(DateTime.Now);
+
+            // Define a filter to get reservations for the current user with a reserved date from today onwards
+            var filter = Builders<Reservation>.Filter.And(
+                Builders<Reservation>.Filter.Eq(r => r.UserId, User.FindFirstValue(ClaimTypes.PrimarySid)), // Filter by user
+                Builders<Reservation>.Filter.Gte(r => r.ReservedDate, currentDate) // Filter by today onwards
+            );
+
+            System.Diagnostics.Debug.WriteLine(filter);
+            // Retrieve the filtered reservations
+            var userReservations = _mongoDBService.Reservation.Find(filter).ToList();
+
+            return Ok(userReservations);
+        }
     }
 }

@@ -46,7 +46,8 @@ namespace Ticket_reservation_system.Controllers
                 NIC = request.NIC,
                 Email = request.Email,
                 HashedPassword = passwordHash,
-                Role = request.Role
+                Role = request.Role,
+                Active = true
 
             };
 
@@ -54,7 +55,21 @@ namespace Ticket_reservation_system.Controllers
             var usersCollection = _mongoDBService.Users;
             usersCollection.InsertOne(user);
 
-            return Ok(user);
+            // Generate a token for the newly registered user
+            string token = CreateToken(user);
+
+            var responseDto = new LoginResponseDto
+            {
+                PreferredName = user.PreferredName,
+                NIC = user.NIC,
+                UserID = user.Id,
+                Role = user.Role,
+                Email = user.Email,
+                Active = user.Active,
+                Token = token
+            };
+
+            return Ok(responseDto);
         }
 
         [HttpPost("login")]
@@ -87,6 +102,8 @@ namespace Ticket_reservation_system.Controllers
                 NIC = user.NIC,
                 UserID = user.Id,
                 Role = user.Role,
+                Email = user.Email,
+                Active = user.Active,
                 Token = token
             };
 
