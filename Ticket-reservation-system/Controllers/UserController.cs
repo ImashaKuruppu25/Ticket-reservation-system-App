@@ -8,6 +8,7 @@ using MongoDB.Driver;
 using System.Security.Claims;
 using MongoDB.Bson;
 using System.Text.RegularExpressions;
+using Amazon.Runtime.Internal;
 
 namespace Ticket_reservation_system.Controllers
 {
@@ -130,6 +131,7 @@ namespace Ticket_reservation_system.Controllers
         {
             var usersCollection = _mongoDBService.Users;
             var filter = Builders<User>.Filter.Eq(u => u.NIC, nic);
+            var newPassword = BCrypt.Net.BCrypt.HashPassword(updatedData.Password);
 
             // Check if the user exists
             var existingUser = usersCollection.Find(filter).FirstOrDefault();
@@ -143,6 +145,7 @@ namespace Ticket_reservation_system.Controllers
             existingUser.PreferredName = updatedData.PreferredName;
             existingUser.Email = updatedData.Email;
             existingUser.Role = updatedData.Role;
+            existingUser.HashedPassword = newPassword;
 
             usersCollection.ReplaceOne(filter, existingUser);
 
