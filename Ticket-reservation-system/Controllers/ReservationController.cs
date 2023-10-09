@@ -5,6 +5,7 @@ using Ticket_reservation_system.Services;
 using MongoDB.Driver;
 using System.Security.Claims;
 using static System.Runtime.InteropServices.JavaScript.JSType;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Ticket_reservation_system.Controllers
 {
@@ -72,18 +73,20 @@ namespace Ticket_reservation_system.Controllers
         }
 
         [HttpGet("user-reservations-today-onwards")]
+        [Authorize]
         public ActionResult<IEnumerable<Reservation>> GetUserReservationsTodayOnwards()
         {
             // Get the current date as a DateOnly object
             DateOnly currentDate = DateOnly.FromDateTime(DateTime.Now);
+            string userId = User.FindFirstValue(ClaimTypes.Sid);
 
             // Define a filter to get reservations for the current user with a reserved date from today onwards
             var filter = Builders<Reservation>.Filter.And(
-                Builders<Reservation>.Filter.Eq(r => r.UserId, User.FindFirstValue(ClaimTypes.PrimarySid)), // Filter by user
+                Builders<Reservation>.Filter.Eq(r => r.UserId, userId), 
                 Builders<Reservation>.Filter.Gte(r => r.ReservedDate, currentDate) // Filter by today onwards
             );
 
-            System.Diagnostics.Debug.WriteLine(filter);
+            System.Diagnostics.Debug.WriteLine(userId);
             // Retrieve the filtered reservations
             var userReservations = _mongoDBService.Reservation.Find(filter).ToList();
 
