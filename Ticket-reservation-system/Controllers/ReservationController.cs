@@ -238,5 +238,35 @@ namespace Ticket_reservation_system.Controllers
             var destinationInfo = schedule.Destinations.FirstOrDefault(d => d.Name == destination);
             return destinationInfo != null ? destinationInfo.ReachTime.ToString() : "";
         }
+
+        [HttpPatch("update-reservation")]
+        public IActionResult UpdateReservation(string reservationId, ReservationUpdateDto request)
+        {
+            // Perform input validation here
+            if (request == null)
+            {
+                return BadRequest("Invalid update data.");
+            }
+
+            // Find the reservation by ID
+            var reservationsCollection = _mongoDBService.Reservation;
+            var reservation = reservationsCollection.Find(r => r.Id == reservationId).FirstOrDefault();
+
+            if (reservation == null)
+            {
+                return NotFound("Reservation not found.");
+            }
+
+
+            // Update the reservation properties
+            reservation.Class = request.Class;
+            reservation.Adults = request.Adults;
+            reservation.Child = request.Child;
+
+            // Save the updated reservation
+            reservationsCollection.ReplaceOne(r => r.Id == reservationId, reservation);
+
+            return Ok(reservation); 
+        }
     }
 }
