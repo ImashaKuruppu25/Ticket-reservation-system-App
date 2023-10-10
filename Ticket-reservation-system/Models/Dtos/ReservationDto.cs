@@ -10,7 +10,7 @@
         public DateOnly departureDate { get; set; }
         public required int Adults { get; set; }
         public int? Child { get; set; }
-        public required string Class { get; set; }
+        public required string TravelClass { get; set; }
         public required List<int> Seat { get; set; }
         public required float TotalAmount { get; set; }
         public required string Duration { get; set; }

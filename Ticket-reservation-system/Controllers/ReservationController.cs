@@ -62,7 +62,7 @@ namespace Ticket_reservation_system.Controllers
                 To = request.To,
                 Adults = request.Adults,
                 Child = request.Child,
-                Class = request.Class,
+                Class = request.TravelClass,
                 Seat = new List<int>(request.Seat), // seat selection logic here
                 TotalAmount = request.TotalAmount,
                 ReservedDate = request.departureDate,
@@ -147,7 +147,7 @@ namespace Ticket_reservation_system.Controllers
                 To = request.To,
                 Adults = request.Adults,
                 Child = request.Child,
-                Class = request.Class,
+                Class = request.TravelClass,
                 Seat = new List<int>(request.Seat), // seat selection logic here
                 TotalAmount = request.TotalAmount,
                 ReservedDate = request.departureDate,
