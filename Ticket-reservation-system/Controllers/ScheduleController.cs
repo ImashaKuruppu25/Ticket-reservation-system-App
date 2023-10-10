@@ -339,7 +339,8 @@ namespace Ticket_reservation_system.Controllers
                     ArrivalTime = lastDestination?.ReachTime.ToString() ?? schedule.DepartureTime.ToString(),
                     Duration = CalculateDuration(schedule.DepartureTime, lastDestination?.ReachTime ?? schedule.DepartureTime),
                     Type = schedule.Type,
-                    Availability = GetAvailabilityStatus(schedule.AvailableTicketCount)
+                    Availability = GetAvailabilityStatus(schedule.AvailableTicketCount),
+                    Price = lastDestination.Price
                 };
             }).ToList();
 

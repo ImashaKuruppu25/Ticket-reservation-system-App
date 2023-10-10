@@ -14,5 +14,6 @@
         public string Duration { get; set; }
         public string Type { get; set; }
         public string Availability { get; set; }
+        public decimal Price { get; set; }
     }
 }
