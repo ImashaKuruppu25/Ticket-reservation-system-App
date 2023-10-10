@@ -93,7 +93,7 @@ namespace Ticket_reservation_system.Controllers
 
         // PUT: api/users/deactivate/{userId}
         [HttpPut("deactivate/{nic}")]
-        [Authorize(Roles = "Backoffice")]
+        [Authorize(Roles = "Backoffice , Traveler")]
         public ActionResult DeactivateUser(string nic)
         {
             var usersCollection = _mongoDBService.Users;

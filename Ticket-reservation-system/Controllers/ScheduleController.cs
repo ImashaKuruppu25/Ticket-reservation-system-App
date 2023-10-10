@@ -308,6 +308,7 @@ namespace Ticket_reservation_system.Controllers
         public ActionResult<IEnumerable<ScheduleResponseDto>> GetTodayOnwardSchedules([FromQuery] DateOnly date)
         {
             var schedulesCollection = _mongoDBService.Schedules;
+            var trainsCollection = _mongoDBService.Trains;
             var filterBuilder = Builders<Schedule>.Filter;
 
             // Define the filter to retrieve active schedules with departure date on or after the input date
@@ -317,19 +318,24 @@ namespace Ticket_reservation_system.Controllers
             );
 
             var availableSchedules = schedulesCollection.Find(filter).ToList();
-
+           
             // Create a list of ScheduleResponseDto objects based on the retrieved schedules
             var scheduleResponseDtos = availableSchedules.Select(schedule =>
             {
                 var lastDestination = schedule.Destinations.LastOrDefault();
+                var trainFilter = Builders<Train>.Filter.Eq(t => t.Id, schedule.TrainId);
+                var train = trainsCollection.Find(trainFilter).FirstOrDefault();
 
                 return new ScheduleResponseDto
                 {
                     TrainId = schedule.TrainId,
+                    TrainName = schedule.TrainName,
+                    TrainNumber= train.Number,
                     ScheduleId = schedule.Id,
                     From = schedule.StartingStation,
                     To = lastDestination?.Name ?? schedule.StartingStation,
                     DepartureTime = schedule.DepartureTime.ToString(),
+                    DepartureDate = schedule.DepartureDate.ToString(),
                     ArrivalTime = lastDestination?.ReachTime.ToString() ?? schedule.DepartureTime.ToString(),
                     Duration = CalculateDuration(schedule.DepartureTime, lastDestination?.ReachTime ?? schedule.DepartureTime),
                     Type = schedule.Type,
