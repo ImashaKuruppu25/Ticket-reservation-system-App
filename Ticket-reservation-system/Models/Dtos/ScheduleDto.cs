@@ -6,7 +6,6 @@ namespace Ticket_reservation_system.Models.Dtos
     {
         public required string Type { get; set; }
         public required string TrainId { get; set; }
-        public required string TrainName { get; set; }
         public required string Status { get; set; }
         public required string StartingStation { get; set; }
         public required TimeOnly DepartureTime { get; set; }

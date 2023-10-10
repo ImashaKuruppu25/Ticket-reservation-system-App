@@ -13,7 +13,7 @@
         public string ArrivalTime { get; set; }
         public string Duration { get; set; }
         public string Type { get; set; }
-        public string Availability { get; set; }
+        public int AvailableTicketCount { get; set; }
         public decimal Price { get; set; }
     }
 }

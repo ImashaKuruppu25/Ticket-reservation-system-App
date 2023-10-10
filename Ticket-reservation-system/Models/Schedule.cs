@@ -17,9 +17,6 @@ namespace Ticket_reservation_system.Models
         [BsonElement("Type")]
         public string Type { get; set; } // "express" or "slow"
 
-        [BsonElement("TrainName")]
-        public string TrainName { get; set; } 
-
         [BsonElement("TrainId")]
         [BsonRepresentation(BsonType.ObjectId)]
         public string TrainId { get; set; }
@@ -41,6 +38,9 @@ namespace Ticket_reservation_system.Models
 
         [BsonElement("AvailableTicketCount")]
         public int AvailableTicketCount { get; set; }
+
+        [BsonElement("CurrentlyAvailableTicketCount")]
+        public int CurrentlyAvailableTicketCount { get; set; }
     }
 
     public class Destination

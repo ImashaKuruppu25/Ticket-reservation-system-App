@@ -52,13 +52,13 @@ namespace Ticket_reservation_system.Controllers
             {
                 Type = request.Type,
                 TrainId = request.TrainId,
-                TrainName = request.TrainName,
                 Status = request.Status,
                 StartingStation = request.StartingStation,
                 DepartureTime = request.DepartureTime,
                 DepartureDate = request.DepartureDate,
                 Destinations = destinations,
-                AvailableTicketCount = request.AvailableTicketCount
+                AvailableTicketCount = request.AvailableTicketCount,
+                CurrentlyAvailableTicketCount = request.AvailableTicketCount
             };
 
             // Insert the new schedule into the Schedules collection
@@ -107,13 +107,13 @@ namespace Ticket_reservation_system.Controllers
             // Update the existing schedule with the request data
             existingSchedule.Type = request.Type;
             existingSchedule.TrainId = request.TrainId;
-            existingSchedule.TrainName = request.TrainName;
             existingSchedule.Status = request.Status;
             existingSchedule.StartingStation = request.StartingStation;
             existingSchedule.DepartureTime = request.DepartureTime;
             existingSchedule.DepartureDate = request.DepartureDate;
             existingSchedule.Destinations = destinations;
             existingSchedule.AvailableTicketCount = request.AvailableTicketCount;
+            existingSchedule.CurrentlyAvailableTicketCount = request.AvailableTicketCount;
 
             // Replace the existing schedule with the updated schedule
             schedulesCollection.ReplaceOne(scheduleFilter, existingSchedule);
@@ -126,10 +126,13 @@ namespace Ticket_reservation_system.Controllers
         public ActionResult<IEnumerable<ScheduleDto>> GetAllSchedules([FromQuery] int currentPage = 1, [FromQuery] int limit = 10, [FromQuery] string searchTerm = null)
         {
             var schedulesCollection = _mongoDBService.Schedules;
+            var trainsCollection = _mongoDBService.Trains;
+
+            //get the train name from train collection and set to the search filters
 
             // Define a filter to search by schedule properties (modify as needed)
             var searchFilter = Builders<Schedule>.Filter.Or(
-                Builders<Schedule>.Filter.Regex(s => s.TrainName, new MongoDB.Bson.BsonRegularExpression(searchTerm ?? "", "i")), // Case-insensitive search by Train name
+               Builders<Schedule>.Filter.In(s => s.TrainId, GetTrainIdsByTrainName(trainsCollection, searchTerm ?? "")), // Filter by Train IDs retrieved by Train name
                 Builders<Schedule>.Filter.Regex(s => s.StartingStation, new MongoDB.Bson.BsonRegularExpression(searchTerm ?? "", "i")) // Case-insensitive search by StartingStation
             );
 
@@ -159,7 +162,7 @@ namespace Ticket_reservation_system.Controllers
                 Id = schedule.Id,
                 Type = schedule.Type,
                 TrainId = schedule.TrainId,
-                TrainName= schedule.TrainName,
+                TrainName = GetTrainName(trainsCollection, schedule.TrainId),
                 Status = schedule.Status,
                 StartingStation = schedule.StartingStation,
                 DepartureTime = schedule.DepartureTime,
@@ -171,7 +174,7 @@ namespace Ticket_reservation_system.Controllers
                     Price = destination.Price
                 }).ToList(),
                 Duration= CalculateDuration(schedule.DepartureTime, schedule.Destinations.LastOrDefault()?.ReachTime ?? schedule.DepartureTime),
-                AvailableTicketCount = schedule.AvailableTicketCount
+                AvailableTicketCount = schedule.CurrentlyAvailableTicketCount
             });
 
             // Return the list of schedules along with pagination information
@@ -191,6 +194,7 @@ namespace Ticket_reservation_system.Controllers
         public ActionResult<IEnumerable<ScheduleDto>> GetAllActiveSchedules()
         {
             var schedulesCollection = _mongoDBService.Schedules;
+            var trainsCollection = _mongoDBService.Trains;
 
             // Define a filter to search for active schedules
             var filter = Builders<Schedule>.Filter.Eq(s => s.Status, "active");
@@ -204,7 +208,7 @@ namespace Ticket_reservation_system.Controllers
                 Id = schedule.Id,
                 Type = schedule.Type,
                 TrainId = schedule.TrainId,
-                TrainName = schedule.TrainName,
+                TrainName = GetTrainName(trainsCollection, schedule.TrainId),
                 Status = schedule.Status,
                 StartingStation = schedule.StartingStation,
                 DepartureTime = schedule.DepartureTime,
@@ -215,7 +219,8 @@ namespace Ticket_reservation_system.Controllers
                     ReachTime = destination.ReachTime,
                     Price = destination.Price
                 }).ToList(),
-                AvailableTicketCount = schedule.AvailableTicketCount
+                Duration = CalculateDuration(schedule.DepartureTime, schedule.Destinations.LastOrDefault()?.ReachTime ?? schedule.DepartureTime),
+                AvailableTicketCount = schedule.CurrentlyAvailableTicketCount
             });
 
             return Ok(scheduleDtos);
@@ -225,6 +230,7 @@ namespace Ticket_reservation_system.Controllers
         public IActionResult GetScheduleDetails([FromQuery] string from, [FromQuery] string to, [FromQuery] DateOnly date)
         {
             var schedulesCollection = _mongoDBService.Schedules;
+            var trainsCollection = _mongoDBService.Trains;
             var filterBuilder = Builders<Schedule>.Filter;
 
             // Define a case-insensitive regex pattern for 'from' and 'to'
@@ -295,6 +301,7 @@ namespace Ticket_reservation_system.Controllers
 
                 return new
                 {
+                    TrainName = GetTrainName(trainsCollection, s.TrainId),
                     Schedule = s,
                     TotalPrice = scheduleTotalPrice,
                     Duration = duration
@@ -329,8 +336,8 @@ namespace Ticket_reservation_system.Controllers
                 return new ScheduleResponseDto
                 {
                     TrainId = schedule.TrainId,
-                    TrainName = schedule.TrainName,
-                    TrainNumber= train.Number,
+                    TrainName = GetTrainName(trainsCollection, schedule.TrainId),
+                    TrainNumber = train.Number,
                     ScheduleId = schedule.Id,
                     From = schedule.StartingStation,
                     To = lastDestination?.Name ?? schedule.StartingStation,
@@ -339,7 +346,7 @@ namespace Ticket_reservation_system.Controllers
                     ArrivalTime = lastDestination?.ReachTime.ToString() ?? schedule.DepartureTime.ToString(),
                     Duration = CalculateDuration(schedule.DepartureTime, lastDestination?.ReachTime ?? schedule.DepartureTime),
                     Type = schedule.Type,
-                    Availability = GetAvailabilityStatus(schedule.AvailableTicketCount),
+                    AvailableTicketCount = GetAvailabilityStatus(schedule.CurrentlyAvailableTicketCount),
                     Price = lastDestination.Price
                 };
             }).ToList();
@@ -358,9 +365,24 @@ namespace Ticket_reservation_system.Controllers
         }
 
         // Helper method to get availability status
-        private string GetAvailabilityStatus(int availableTicketCount)
+        private int GetAvailabilityStatus(int availableTicketCount)
         {
-            return availableTicketCount > 0 ? availableTicketCount.ToString() : "Sold Out";
+            return availableTicketCount > 0 ? availableTicketCount : 0;
+        }
+
+        // Helper method to retrieve the train name based on train ID
+        private string GetTrainName(IMongoCollection<Train> trainsCollection, string trainId)
+        {
+            var train = trainsCollection.Find(t => t.Id == trainId).FirstOrDefault();
+            return train != null ? train.Name : "Unknown Train";
+        }
+
+        // Helper method to retrieve the trainID based on search term
+        private List<string> GetTrainIdsByTrainName(IMongoCollection<Train> trainsCollection, string trainName)
+        {
+            var trainFilter = Builders<Train>.Filter.Regex(t => t.Name, new MongoDB.Bson.BsonRegularExpression(trainName, "i"));
+            var trainIds = trainsCollection.Find(trainFilter).ToList().Select(train => train.Id).ToList();
+            return trainIds;
         }
     }
 }

@@ -13,12 +13,13 @@ namespace Ticket_reservation_system.Models.Dtos
         public string TicketNumber { get; set; }
         public PassengerInfo Passenger { get; set; }
         public string Duration { get; set; }
+        public string Type { get; set; }
     }
     public class PassengerInfo
     {
         public int Adult { get; set; }
         public int? Child { get; set; }
         public object Seat { get; set; } // Use object type for flexibility (number or number[])
-        public string Class { get; set; }
+        public string TravelClass { get; set; }
     }
 }

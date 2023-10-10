@@ -2,8 +2,10 @@
 {
     public class ReservationUpdateDto
     {
-        public string Class { get; set; }
+
+        public string TravelClass { get; set; }
         public int Adults { get; set; }
         public int? Child { get; set; }
+        public string ScheduleId { get; set; }
     }
 }

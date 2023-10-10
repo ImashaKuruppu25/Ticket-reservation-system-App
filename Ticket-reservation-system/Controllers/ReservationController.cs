@@ -52,6 +52,28 @@ namespace Ticket_reservation_system.Controllers
                 return BadRequest("You have reached the maximum limit of 4 reservations.");
             }
 
+            // Get the schedule from the Schedules collection
+            var schedulesCollection = _mongoDBService.Schedules;
+            var schedule = schedulesCollection.Find(s => s.Id == request.ScheduleId).FirstOrDefault();
+
+            if (schedule == null)
+            {
+                return BadRequest("Invalid schedule ID.");
+            }
+
+            // Calculate the number of tickets needed (adults + child)
+            int numberOfTickets = (int)(request.Adults + request.Child);
+
+            // Check if there are enough available tickets in the schedule
+            if (schedule.CurrentlyAvailableTicketCount < numberOfTickets)
+            {
+                return BadRequest("Not enough available tickets for this schedule.");
+            }
+
+            // Update the AvailableTicketCount in the schedule
+            schedule.CurrentlyAvailableTicketCount -= numberOfTickets;
+            schedulesCollection.ReplaceOne(s => s.Id == request.ScheduleId, schedule);
+
             // Create a new reservation from the request data
             var newReservation = new Reservation
             {
@@ -123,7 +145,7 @@ namespace Ticket_reservation_system.Controllers
                         TotalAmount = reservation.TotalAmount,
                         ReservedDate = reservation.ReservedDate,
                         Duration = reservation.Duration,
-                        TrainName = schedule.TrainName,
+                        TrainName = train.Name,
                         DepartureTime = schedule.DepartureTime.ToString(),
                         ArrivalTime = schedule.Destinations.LastOrDefault()?.ReachTime.ToString(),
                         TrainNumber = train.Number
@@ -176,7 +198,28 @@ namespace Ticket_reservation_system.Controllers
                 return BadRequest("User have reached the maximum limit of 4 reservations.");
             }
 
-            
+            // Get the schedule from the Schedules collection
+            var schedulesCollection = _mongoDBService.Schedules;
+            var schedule = schedulesCollection.Find(s => s.Id == request.ScheduleId).FirstOrDefault();
+
+            if (schedule == null)
+            {
+                return BadRequest("Invalid schedule ID.");
+            }
+
+            // Calculate the number of tickets needed (adults + child)
+            int numberOfTickets = (int)(request.Adults + request.Child);
+
+            // Check if there are enough available tickets in the schedule
+            if (schedule.CurrentlyAvailableTicketCount < numberOfTickets)
+            {
+                return BadRequest("Not enough available tickets for this schedule.");
+            }
+
+            // Update the AvailableTicketCount in the schedule
+            schedule.CurrentlyAvailableTicketCount -= numberOfTickets;
+            schedulesCollection.ReplaceOne(s => s.Id == request.ScheduleId, schedule);
+
             // Create a new reservation from the request  data
             var newReservation = new Reservation
             {
@@ -225,7 +268,7 @@ namespace Ticket_reservation_system.Controllers
             // Calculate the ArrivalTime based on destination times
             string arrivalTime = CalculateArrivalTime(schedule, reservation.To);
 
-           
+       
             // Create a ReservationResponseDto based on the reservation data
             var responseDto = new ReservationResponseDto
             {
@@ -242,8 +285,9 @@ namespace Ticket_reservation_system.Controllers
                     Adult = reservation.Adults,
                     Child = reservation.Child,
                     Seat = reservation.Seat,
-                    Class = reservation.Class
-                }
+                    TravelClass = reservation.Class
+                },
+                Type = schedule.Type
             };
 
             return Ok(responseDto);
@@ -267,9 +311,31 @@ namespace Ticket_reservation_system.Controllers
                 return NotFound("Reservation not found.");
             }
 
+            // Get the schedule from the Schedules collection
+            var schedulesCollection = _mongoDBService.Schedules;
+            var schedule = schedulesCollection.Find(s => s.Id == request.ScheduleId).FirstOrDefault();
+
+            if (schedule == null)
+            {
+                return BadRequest("Invalid schedule ID.");
+            }
+
+            // Calculate the number of tickets needed (adults + child)
+            int numberOfTickets = (int)(request.Adults + request.Child);
+
+            // Check if there are enough available tickets in the schedule
+            if (schedule.CurrentlyAvailableTicketCount < numberOfTickets)
+            {
+                return BadRequest("Not enough available tickets for this schedule.");
+            }
+
+            // Update the AvailableTicketCount in the schedule
+            schedule.CurrentlyAvailableTicketCount -= numberOfTickets;
+            schedulesCollection.ReplaceOne(s => s.Id == request.ScheduleId, schedule);
+
 
             // Update the reservation properties
-            reservation.Class = request.Class;
+            reservation.Class = request.TravelClass;
             reservation.Adults = request.Adults;
             reservation.Child = request.Child;
 
@@ -307,6 +373,7 @@ namespace Ticket_reservation_system.Controllers
         [FromQuery] string searchTerm = null)
         {
             var reservationsCollection = _mongoDBService.Reservation;
+            var trainsCollection = _mongoDBService.Trains;
 
             // Define a filter for searching by relevant fields (modify as needed)
             var searchFilter = Builders<Reservation>.Filter.Or(
@@ -345,7 +412,7 @@ namespace Ticket_reservation_system.Controllers
                 {
                     reservationId = reservation.Id,
                     userNIC = user.NIC, 
-                    trainName = schedule.TrainName, 
+                    trainName = GetTrainName(trainsCollection, schedule.TrainId), 
                     departure = reservation.From, 
                     arrival = reservation.To, 
                     adults = reservation.Adults,
@@ -408,5 +475,11 @@ namespace Ticket_reservation_system.Controllers
             return destinationInfo != null ? destinationInfo.ReachTime.ToString() : "";
         }
 
+        // Helper method to retrieve the train name based on train ID
+        private string GetTrainName(IMongoCollection<Train> trainsCollection, string trainId)
+        {
+            var train = trainsCollection.Find(t => t.Id == trainId).FirstOrDefault();
+            return train != null ? train.Name : "Unknown Train";
+        }
     }
 }
