@@ -160,7 +160,7 @@ namespace Ticket_reservation_system.Controllers
         }
 
         [HttpPost("Travel-agent-reservation")]
-        [Authorize(Roles = "Travel-agent")]
+        [Authorize(Roles = "TravelAgent")]
         public ActionResult CreateTravelerReservation(TravelerReservationsDto request)
         {
             // Perform input validation here
