@@ -79,7 +79,7 @@ namespace Ticket_reservation_system.Controllers
 
         [HttpGet("user-reservations-today-onwards")]
         [Authorize]
-        public ActionResult<IEnumerable<Reservation>> GetUserReservationsTodayOnwards()
+        public ActionResult<IEnumerable<ReservationDto>> GetUserReservationsTodayOnwards()
         {
             // Get the current date as a DateOnly object
             DateOnly currentDate = DateOnly.FromDateTime(DateTime.Now);
@@ -87,14 +87,54 @@ namespace Ticket_reservation_system.Controllers
 
             // Define a filter to get reservations for the current user with a reserved date from today onwards
             var filter = Builders<Reservation>.Filter.And(
-                Builders<Reservation>.Filter.Eq(r => r.UserId, userId), 
+                Builders<Reservation>.Filter.Eq(r => r.UserId, userId),
                 Builders<Reservation>.Filter.Gte(r => r.ReservedDate, currentDate) // Filter by today onwards
             );
 
             // Retrieve the filtered reservations
             var userReservations = _mongoDBService.Reservation.Find(filter).ToList();
 
-            return Ok(userReservations);
+            // Create a list to hold ReservationDto objects with additional information
+            var reservationDtos = new List<object>();
+
+            foreach (var reservation in userReservations)
+            {
+                // Fetch the related schedule document
+                var schedule = _mongoDBService.Schedules.Find(s => s.Id == reservation.ScheduleId).FirstOrDefault();
+
+                if (schedule != null)
+                {
+                    // Fetch the related train document
+                    var train = _mongoDBService.Trains.Find(t => t.Id == schedule.TrainId).FirstOrDefault();
+
+                    // Create a ReservationDto object with the additional information
+                    var reservationDto = new 
+                    {
+                        Id = reservation.Id,
+                        TickerNo = reservation.TicketNo,
+                        UserId = reservation.UserId,
+                        From = reservation.From,
+                        To = reservation.To,
+                        ScheduleId = reservation.ScheduleId,
+                        Adults = reservation.Adults,
+                        Child = reservation.Child,
+                        TravelClass= reservation.Class,
+                        Seat = reservation.Seat,
+                        TotalAmount = reservation.TotalAmount,
+                        ReservedDate = reservation.ReservedDate,
+                        Duration = reservation.Duration,
+                        TrainName = schedule.TrainName,
+                        DepartureTime = schedule.DepartureTime.ToString(),
+                        ArrivalTime = schedule.Destinations.LastOrDefault()?.ReachTime.ToString(),
+                        TrainNumber = train.Number
+                    };
+
+                    // Add the ReservationDto to the list
+                    reservationDtos.Add(reservationDto);
+                }
+            }
+
+            return Ok(reservationDtos);
         }
 
         [HttpPost("Travel-agent-reservation")]
