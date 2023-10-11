@@ -118,6 +118,17 @@ namespace Ticket_reservation_system.Controllers
         public ActionResult DeleteTrainByNumber(string trainID)
         {
             var trainsCollection = _mongoDBService.Trains;
+            var schedulesCollection = _mongoDBService.Schedules;
+
+            //check if the deleted train is associated with any schedule
+            var scheduleFilter = Builders<Schedule>.Filter.Eq(s => s.TrainId, trainID);
+            var scheduleCount = schedulesCollection.CountDocuments(scheduleFilter);
+
+            if (scheduleCount > 0)
+            {
+                // If the train is associated with at least one schedule, roll back the deletion
+                return BadRequest("Train is associated with at least one schedule and cannot be deleted.");
+            }
 
             // Define a filter to find the train by its number
             var filter = Builders<Train>.Filter.Eq(t => t.Id, trainID);
