@@ -8,7 +8,7 @@ namespace Ticket_reservation_system.Models.Dtos
         public string To { get; set; }
         public DateOnly ReservedDate { get; set; }
         public TimeOnly DepartureTime { get; set; }
-        public string ArrivalTime { get; set; }
+        public TimeOnly ArrivalTime { get; set; }
         public object User { get; set; }
         public string TicketNumber { get; set; }
         public PassengerInfo Passenger { get; set; }

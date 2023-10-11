@@ -266,7 +266,7 @@ namespace Ticket_reservation_system.Controllers
             }
 
             // Calculate the ArrivalTime based on destination times
-            string arrivalTime = CalculateArrivalTime(schedule, reservation.To);
+            TimeOnly arrivalTime = CalculateArrivalTime(schedule, reservation.To);
 
        
             // Create a ReservationResponseDto based on the reservation data
@@ -508,11 +508,12 @@ namespace Ticket_reservation_system.Controllers
             var schedule = _mongoDBService.Schedules.Find(s => s.Id == scheduleId).FirstOrDefault();
             return schedule;
         }
-        private string CalculateArrivalTime(Schedule schedule, string destination)
+        private TimeOnly CalculateArrivalTime(Schedule schedule, string destination)
+
         {
             // Implement logic to calculate the ArrivalTime based on Schedule and destination
             var destinationInfo = schedule.Destinations.FirstOrDefault(d => d.Name == destination);
-            return destinationInfo != null ? destinationInfo.ReachTime.ToString() : "";
+            return destinationInfo != null ? destinationInfo.ReachTime : destinationInfo.ReachTime;
         }
 
         // Helper method to retrieve the train name based on train ID
