@@ -362,7 +362,47 @@ namespace Ticket_reservation_system.Controllers
             // Retrieve the filtered reservations
             var userReservations = _mongoDBService.Reservation.Find(filter).ToList();
 
-            return Ok(userReservations);
+            // Create a list to hold reservation details with additional information
+            var reservationDtos = new List<object>();
+
+            foreach (var reservation in userReservations)
+            {
+                // Fetch the related schedule document
+                var schedule = _mongoDBService.Schedules.Find(s => s.Id == reservation.ScheduleId).FirstOrDefault();
+
+                if (schedule != null)
+                {
+                    // Fetch the related train document
+                    var train = _mongoDBService.Trains.Find(t => t.Id == schedule.TrainId).FirstOrDefault();
+
+                    // Create an object with additional reservation information
+                    var reservationDto = new
+                    {
+                        Id = reservation.Id,
+                        TicketNo = reservation.TicketNo,
+                        UserId = reservation.UserId,
+                        From = reservation.From,
+                        To = reservation.To,
+                        ScheduleId = reservation.ScheduleId,
+                        Adults = reservation.Adults,
+                        Child = reservation.Child,
+                        TravelClass = reservation.Class,
+                        Seat = reservation.Seat,
+                        TotalAmount = reservation.TotalAmount,
+                        ReservedDate = reservation.ReservedDate,
+                        Duration = reservation.Duration,
+                        TrainName = train.Name,
+                        DepartureTime = schedule.DepartureTime.ToString(),
+                        ArrivalTime = schedule.Destinations.LastOrDefault()?.ReachTime.ToString(),
+                        TrainNumber = train.Number
+                    };
+
+                    // Add the reservation information to the list
+                    reservationDtos.Add(reservationDto);
+                }
+            }
+
+            return Ok(reservationDtos);
         }
 
         [HttpGet("get-all")]
