@@ -302,6 +302,7 @@ namespace Ticket_reservation_system.Controllers
                 return new
                 {
                     TrainName = GetTrainName(trainsCollection, s.TrainId),
+                    TrainNumber = GetTrainUmber(trainsCollection, s.TrainId),
                     Schedule = s,
                     TotalPrice = scheduleTotalPrice,
                     Duration = duration
@@ -342,7 +343,7 @@ namespace Ticket_reservation_system.Controllers
                     From = schedule.StartingStation,
                     To = lastDestination?.Name ?? schedule.StartingStation,
                     DepartureTime = schedule.DepartureTime.ToString(),
-                    DepartureDate = schedule.DepartureDate.ToString(),
+                    DepartureDate = schedule.DepartureDate,
                     ArrivalTime = lastDestination?.ReachTime.ToString() ?? schedule.DepartureTime.ToString(),
                     Duration = CalculateDuration(schedule.DepartureTime, lastDestination?.ReachTime ?? schedule.DepartureTime),
                     Type = schedule.Type,
@@ -375,6 +376,13 @@ namespace Ticket_reservation_system.Controllers
         {
             var train = trainsCollection.Find(t => t.Id == trainId).FirstOrDefault();
             return train != null ? train.Name : "Unknown Train";
+        }
+
+        // Helper method to retrieve the train name based on train ID
+        private int GetTrainUmber(IMongoCollection<Train> trainsCollection, string trainId)
+        {
+            var train = trainsCollection.Find(t => t.Id == trainId).FirstOrDefault();
+            return train != null ? train.Number : 0000;
         }
 
         // Helper method to retrieve the trainID based on search term
