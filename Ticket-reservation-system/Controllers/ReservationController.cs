@@ -313,11 +313,11 @@ namespace Ticket_reservation_system.Controllers
 
             // Get the schedule from the Schedules collection
             var schedulesCollection = _mongoDBService.Schedules;
-            var schedule = schedulesCollection.Find(s => s.Id == request.ScheduleId).FirstOrDefault();
+            var schedule = schedulesCollection.Find(s => s.Id == reservation.ScheduleId).FirstOrDefault();
 
             if (schedule == null)
             {
-                return BadRequest("Invalid schedule ID.");
+                return BadRequest("Invalid schedule.");
             }
 
             // Calculate the number of tickets needed (adults + child)
@@ -480,6 +480,37 @@ namespace Ticket_reservation_system.Controllers
 
             return Ok(result);
         }
+
+        //[HttpDelete("delete/{reservationId}")]
+        //public IActionResult DeleteReservation(string reservationId)
+        //{
+        //    var reservation = _mongoDBService.Reservation.Find(r => r.Id == reservationId).FirstOrDefault();
+
+        //    if (reservation == null)
+        //    {
+        //        return NotFound("Reservation not found.");
+        //    }
+
+        //    var currentDate = DateOnly.FromDateTime(DateTime.Now);
+        //    var departureDate = DateOnly.FromDateTime(reservation.DepartureDate);
+
+        //    //var daysUntilDeparture =  departureDate - currentDate;
+
+        //    //Console.WriteLine($"XXXXXXXXXXXXX: {daysUntilDeparture}");
+        //    Console.WriteLine($"YYYYYYYYYYYYY: {currentDate.DayNumber}");
+        //    Console.WriteLine($"ZZZZZZZZZZZZZ: {departureDate.DayNumber}");
+
+        //    //if (daysUntilDeparture < 5)
+        //    //{
+        //    //    return BadRequest("Reservation can't be canceled. Departure date is too soon.");
+        //    //}
+
+
+        //    // Proceed with the reservation deletion
+        //    //_mongoDBService.Reservation.DeleteOne(r => r.Id == reservationId);
+
+        //    return Ok("Reservation deleted successfully.");
+        //}
 
         private object GetUserById(string userId)
         {

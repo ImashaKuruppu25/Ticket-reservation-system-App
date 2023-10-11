@@ -6,6 +6,6 @@
         public string TravelClass { get; set; }
         public int Adults { get; set; }
         public int? Child { get; set; }
-        public string ScheduleId { get; set; }
+        public string? ScheduleId { get; set; }
     }
 }
