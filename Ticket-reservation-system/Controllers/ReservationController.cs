@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Authorization;
 using System.Net.NetworkInformation;
 using Microsoft.AspNetCore.Identity;
 using MongoDB.Bson;
+using Amazon.Runtime.Internal;
 
 namespace Ticket_reservation_system.Controllers
 {
@@ -481,36 +482,47 @@ namespace Ticket_reservation_system.Controllers
             return Ok(result);
         }
 
-        //[HttpDelete("delete/{reservationId}")]
-        //public IActionResult DeleteReservation(string reservationId)
-        //{
-        //    var reservation = _mongoDBService.Reservation.Find(r => r.Id == reservationId).FirstOrDefault();
+        [HttpDelete("delete/{reservationId}")]
+        public IActionResult DeleteReservation(string reservationId)
+        {
+            var reservation = _mongoDBService.Reservation.Find(r => r.Id == reservationId).FirstOrDefault();
+            var schedulesCollection = _mongoDBService.Schedules;
+            var schedule = schedulesCollection.Find(s => s.Id == reservation.ScheduleId).FirstOrDefault();
 
-        //    if (reservation == null)
-        //    {
-        //        return NotFound("Reservation not found.");
-        //    }
+            if (reservation == null)
+            {
+                return NotFound("Reservation not found.");
+            }
+            //
+            if (schedule == null)
+            {
+                return NotFound("Schedule not found.");
+            }
 
-        //    var currentDate = DateOnly.FromDateTime(DateTime.Now);
-        //    var departureDate = DateOnly.FromDateTime(reservation.DepartureDate);
+            var currentDate = DateOnly.FromDateTime(DateTime.Now);
+            var departureDate = schedule.DepartureDate;
 
-        //    //var daysUntilDeparture =  departureDate - currentDate;
+            var daysUntilDeparture = departureDate.Day - currentDate.Day;
 
-        //    //Console.WriteLine($"XXXXXXXXXXXXX: {daysUntilDeparture}");
-        //    Console.WriteLine($"YYYYYYYYYYYYY: {currentDate.DayNumber}");
-        //    Console.WriteLine($"ZZZZZZZZZZZZZ: {departureDate.DayNumber}");
+            //Console.WriteLine(daysUntilDeparture);
 
-        //    //if (daysUntilDeparture < 5)
-        //    //{
-        //    //    return BadRequest("Reservation can't be canceled. Departure date is too soon.");
-        //    //}
+            if (daysUntilDeparture <= 5)
+            {
+                return BadRequest("Reservation can't be canceled. Departure date is too soon.");
+            }
 
+            // Calculate the number of tickets needed (adults + child)
+            int numberOfTickets = (int)(reservation.Adults + reservation.Child);
 
-        //    // Proceed with the reservation deletion
-        //    //_mongoDBService.Reservation.DeleteOne(r => r.Id == reservationId);
+            // Update the AvailableTicketCount in the schedule
+            schedule.CurrentlyAvailableTicketCount += numberOfTickets;
+            schedulesCollection.ReplaceOne(s => s.Id == reservation.ScheduleId, schedule);
 
-        //    return Ok("Reservation deleted successfully.");
-        //}
+            //Proceed with the reservation deletion
+            _mongoDBService.Reservation.DeleteOne(r => r.Id == reservationId);
+
+            return Ok("Reservation deleted successfully.");
+        }
 
         private object GetUserById(string userId)
         {
