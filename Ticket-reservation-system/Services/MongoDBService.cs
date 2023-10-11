@@ -21,5 +21,6 @@ namespace Ticket_reservation_system.Services
         public IMongoCollection<Train> Trains => _database.GetCollection<Train>("Trains");
         public IMongoCollection<Schedule> Schedules => _database.GetCollection<Schedule>("Schedules");
         public IMongoCollection<Reservation> Reservation => _database.GetCollection<Reservation>("Reservations");
+        public IMongoCollection<CanceledReservation> CanceledReservations => _database.GetCollection<CanceledReservation>("CanceledReservations");
     }
 }

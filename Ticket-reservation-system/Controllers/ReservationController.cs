@@ -483,7 +483,7 @@ namespace Ticket_reservation_system.Controllers
         }
 
         [HttpDelete("delete/{reservationId}")]
-        public IActionResult DeleteReservation(string reservationId)
+        public IActionResult DeleteReservation(string reservationId , string message)
         {
             var reservation = _mongoDBService.Reservation.Find(r => r.Id == reservationId).FirstOrDefault();
             var schedulesCollection = _mongoDBService.Schedules;
@@ -506,10 +506,20 @@ namespace Ticket_reservation_system.Controllers
 
             //Console.WriteLine(daysUntilDeparture);
 
-            if (daysUntilDeparture <= 5)
+            if (daysUntilDeparture < 5)
             {
                 return BadRequest("Reservation can't be canceled. Departure date is too soon.");
             }
+
+            // Create a canceled reservation
+            var canceledReservation = new CanceledReservation
+            {
+                Reservation  = reservation,
+                Message = message
+            };
+
+            // Insert the canceled reservation into the canceledReservations collection
+            _mongoDBService.CanceledReservations.InsertOne(canceledReservation);
 
             // Calculate the number of tickets needed (adults + child)
             int numberOfTickets = (int)(reservation.Adults + reservation.Child);
