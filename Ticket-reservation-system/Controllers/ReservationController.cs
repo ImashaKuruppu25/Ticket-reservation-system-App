@@ -77,7 +77,7 @@ namespace Ticket_reservation_system.Controllers
             // Create a new reservation from the request data
             var newReservation = new Reservation
             {
-                TicketNo = Guid.NewGuid().ToString(),
+                TicketNo = GenerateUniqueTicketNumber(),
                 ScheduleId = request.ScheduleId,
                 UserId = request.UserId,
                 From = request.From,
@@ -521,6 +521,20 @@ namespace Ticket_reservation_system.Controllers
         {
             var train = trainsCollection.Find(t => t.Id == trainId).FirstOrDefault();
             return train != null ? train.Name : "Unknown Train";
+        }
+
+        private string GenerateUniqueTicketNumber()
+        {
+            // Create a random number generator
+            Random random = new Random();
+
+            // Generate a random 6-digit number
+            int randomNumber = random.Next(100000, 1000000);
+
+            // Combine with the prefix
+            string ticketNumber = "PH" + randomNumber.ToString();
+
+            return ticketNumber;
         }
     }
 }
