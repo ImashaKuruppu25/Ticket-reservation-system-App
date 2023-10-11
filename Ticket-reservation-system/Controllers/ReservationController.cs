@@ -321,6 +321,17 @@ namespace Ticket_reservation_system.Controllers
                 return BadRequest("Invalid schedule.");
             }
 
+            var currentDate = DateOnly.FromDateTime(DateTime.Now);
+            var departureDate = schedule.DepartureDate;
+            var daysUntilDeparture = departureDate.Day - currentDate.Day;
+
+            //Console.WriteLine(daysUntilDeparture);
+
+            if (daysUntilDeparture < 5)
+            {
+                return BadRequest("Reservation can't be canceled. Departure date is too soon.");
+            }
+
             // Calculate the number of tickets needed (adults + child)
             int numberOfTickets = (int)(request.Adults + request.Child);
 
