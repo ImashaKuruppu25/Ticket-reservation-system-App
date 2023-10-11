@@ -332,8 +332,17 @@ namespace Ticket_reservation_system.Controllers
                 return BadRequest("Reservation can't be canceled. Departure date is too soon.");
             }
 
-            // Calculate the number of tickets needed (adults + child)
-            int numberOfTickets = (int)(request.Adults + request.Child);
+            // Calculate the number of tickets needed based on changes in adult and child counts
+            int existingAdultCount = reservation.Adults;
+            int existingChildCount = (int)reservation.Child;
+
+            int updatedAdultCount = request.Adults;
+            int updatedChildCount = (int)request.Child;
+
+            int numberOfTickets = (updatedAdultCount - existingAdultCount) + (updatedChildCount - existingChildCount);
+            //(3-3)+(3-2) => 0 + 1 = 1
+            //(3-3)+(0-2) => 0 + -2 = -2
+            //(1-0)+(2-2) => 1 + 0 = 1
 
             // Check if there are enough available tickets in the schedule
             if (schedule.CurrentlyAvailableTicketCount < numberOfTickets)
@@ -343,7 +352,8 @@ namespace Ticket_reservation_system.Controllers
 
             // Update the AvailableTicketCount in the schedule
             schedule.CurrentlyAvailableTicketCount -= numberOfTickets;
-            schedulesCollection.ReplaceOne(s => s.Id == request.ScheduleId, schedule);
+            //13 - 1 = > 12
+            schedulesCollection.ReplaceOne(s => s.Id == reservation.ScheduleId, schedule);
 
 
             // Update the reservation properties
