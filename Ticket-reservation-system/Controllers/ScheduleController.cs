@@ -262,7 +262,7 @@ namespace Ticket_reservation_system.Controllers
 
             if (availableSchedules.Count == 0)
             {
-                return NotFound("No available schedules found.");
+                return Ok(new List<Schedule>());
             }
 
             // Calculate total price based on destinations' prices
