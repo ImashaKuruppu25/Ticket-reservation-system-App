@@ -1,4 +1,11 @@
-﻿using MongoDB.Bson;
+﻿/******************************************************************************
+* File:     User.cs
+* Brief:    This file contains the User class, which represents user information
+*           in the Ticket Reservation System. The User class includes details
+*           such as the user's NIC, preferred name, email, hashed password, role,
+*           and active status.
+******************************************************************************/
+using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 using Ticket_reservation_system.Models.Dtos;
 

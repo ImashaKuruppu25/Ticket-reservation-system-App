@@ -1,4 +1,13 @@
-﻿namespace Ticket_reservation_system.Models.Dtos
+﻿/******************************************************************************
+* File:     ReservationDto.cs
+* Brief:    This file contains the ReservationDto class, which is a data transfer
+*           object (DTO) representing the details of a reservation made in the
+*           Ticket Reservation System. It includes properties such as the schedule ID,
+*           user ID, departure and destination stations, departure date, number of
+*           adults and children, travel class, reserved seats, total amount, and
+*           duration of the trip.
+******************************************************************************/
+namespace Ticket_reservation_system.Models.Dtos
 {
     public class ReservationDto
     {

@@ -1,4 +1,12 @@
-﻿using MongoDB.Driver;
+﻿/******************************************************************************
+* File:     MongoDBService.cs
+* Brief:    This file contains the MongoDBService class, which serves as the
+*           service for interacting with the MongoDB database in the Ticket
+*           Reservation System. It provides access to various collections
+*           such as Users, Trains, Schedules, Reservations, and CanceledReservations.
+******************************************************************************/
+
+using MongoDB.Driver;
 using Ticket_reservation_system.Models;
 
 namespace Ticket_reservation_system.Services

@@ -1,4 +1,11 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿/******************************************************************************
+* File:     ReservationController.cs
+* Brief:    This file contains the ReservationController class, which handles
+*           the management of reservations, including creation, updates, 
+*           cancellations, and retrieval of reservation data in the 
+*           Ticket Reservation System.
+******************************************************************************/
+using Microsoft.AspNetCore.Mvc;
 using Ticket_reservation_system.Models.Dtos;
 using Ticket_reservation_system.Models;
 using Ticket_reservation_system.Services;

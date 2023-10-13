@@ -1,4 +1,11 @@
-﻿using Ticket_reservation_system.Models;
+﻿/******************************************************************************
+* File:     AuthController.cs
+* Brief:    This file contains the AuthController class, which is part of the
+*           Ticket Reservation System. AuthController handles user registration,
+*           login, and token generation for authentication.
+******************************************************************************/
+
+using Ticket_reservation_system.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;

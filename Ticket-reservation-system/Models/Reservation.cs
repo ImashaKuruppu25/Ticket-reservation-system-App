@@ -1,4 +1,10 @@
-﻿using MongoDB.Bson.Serialization.Attributes;
+﻿/******************************************************************************
+* File:     Reservation.cs
+* Brief:    This file contains the Reservation class, which represents a reservation
+*           in the Ticket Reservation System. It includes properties such as the user ID,
+*           travel details, and reservation information.
+******************************************************************************/
+using MongoDB.Bson.Serialization.Attributes;
 using MongoDB.Bson;
 
 namespace Ticket_reservation_system.Models

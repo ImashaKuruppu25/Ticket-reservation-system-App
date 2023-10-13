@@ -1,4 +1,13 @@
-﻿using MongoDB.Bson;
+﻿/******************************************************************************
+* File:     AllScheduleDto.cs
+* Brief:    This file contains the AllScheduleDto class, which represents a
+*           data transfer object (DTO) for displaying information about a
+*           schedule in the Ticket Reservation System. It includes details
+*           about the schedule's ID, type, associated train, status, starting
+*           station, departure time, departure date, destinations, duration,
+*           and available ticket count.
+******************************************************************************/
+using MongoDB.Bson;
 
 namespace Ticket_reservation_system.Models.Dtos
 {

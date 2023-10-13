@@ -1,4 +1,13 @@
-﻿using Microsoft.IdentityModel.Tokens;
+﻿/******************************************************************************
+* File:     Schedule.cs
+* Brief:    This file contains the Schedule and Destination classes, which represent
+*           schedule information in the Ticket Reservation System. The Schedule class
+*           contains details about train schedules, including type, status, departure
+*           information, and available tickets. The Destination class represents
+*           information about destinations within a schedule, including name, reach time,
+*           and price.
+******************************************************************************/
+using Microsoft.IdentityModel.Tokens;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 using System.Collections.Generic;

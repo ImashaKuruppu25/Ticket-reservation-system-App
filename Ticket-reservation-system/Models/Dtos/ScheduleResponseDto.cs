@@ -1,4 +1,11 @@
-﻿namespace Ticket_reservation_system.Models.Dtos
+﻿/******************************************************************************
+* File:     ScheduleResponseDto.cs
+* Brief:    This file contains the ScheduleResponseDto class, which is a data transfer
+*           object (DTO) for representing details about a schedule in the Ticket Reservation
+*           System. It includes properties such as the associated train, departure and
+*           arrival information, schedule type, available ticket count, and price.
+******************************************************************************/
+namespace Ticket_reservation_system.Models.Dtos
 {
     public class ScheduleResponseDto
     {

@@ -1,4 +1,13 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿/******************************************************************************
+* File:     UserController.cs
+* Brief:    This file contains the UserController class, which manages user-related
+*           functionality in the Ticket Reservation System. The UserController
+*           provides endpoints for creating, updating, deactivating, and deleting
+*           user accounts. It also offers endpoints to retrieve user information,
+*           reactivate users, get details of the currently authenticated user,
+*           and list all travelers.
+******************************************************************************/
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Ticket_reservation_system.Models.Dtos;

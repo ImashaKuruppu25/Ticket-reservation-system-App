@@ -1,4 +1,13 @@
-﻿using Ticket_reservation_system.Models;
+﻿/******************************************************************************
+* File:     ReservationResponseDto.cs
+* Brief:    This file contains the ReservationResponseDto class, which is a data
+*           transfer object (DTO) representing the response data for a reservation
+*           made in the Ticket Reservation System. It includes properties such as
+*           departure and destination stations, reserved date, departure and arrival
+*           times, user information, ticket number, passenger information, trip
+*           duration, and type of reservation.
+******************************************************************************/
+using Ticket_reservation_system.Models;
 
 namespace Ticket_reservation_system.Models.Dtos
 {

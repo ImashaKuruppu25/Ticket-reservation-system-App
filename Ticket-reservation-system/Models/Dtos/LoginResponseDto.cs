@@ -1,4 +1,12 @@
-﻿namespace Ticket_reservation_system.Models.Dtos
+﻿/******************************************************************************
+* File:     LoginResponseDto.cs
+* Brief:    This file contains the LoginResponseDto class, which is a data transfer
+*           object (DTO) representing the response returned after a user logs in
+*           to the Ticket Reservation System. It includes properties such as the
+*           user's preferred name, NIC (National Identity Card), user ID, role,
+*           email, active status, and an authentication token.
+******************************************************************************/
+namespace Ticket_reservation_system.Models.Dtos
 {
     public class LoginResponseDto
     {

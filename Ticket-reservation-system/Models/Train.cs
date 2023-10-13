@@ -1,4 +1,10 @@
-﻿using MongoDB.Bson.Serialization.Attributes;
+﻿/******************************************************************************
+* File:     Train.cs
+* Brief:    This file contains the Train class, which represents information about
+*           trains in the Ticket Reservation System. The Train class includes
+*           details such as the train's name and number.
+******************************************************************************/
+using MongoDB.Bson.Serialization.Attributes;
 using MongoDB.Bson;
 
 namespace Ticket_reservation_system.Models

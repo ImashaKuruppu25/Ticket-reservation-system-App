@@ -1,4 +1,12 @@
-﻿using Amazon.Runtime.Internal;
+﻿/******************************************************************************
+* File:     ScheduleController.cs
+* Brief:    This file contains the ScheduleController class, which handles
+*           the management of schedules in the Ticket Reservation System.
+*           The ScheduleController allows for creating new schedules, updating
+*           existing schedules, and retrieving schedule data, including details
+*           about active schedules, available routes, and schedules for specific dates.
+******************************************************************************/
+using Amazon.Runtime.Internal;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MongoDB.Bson;

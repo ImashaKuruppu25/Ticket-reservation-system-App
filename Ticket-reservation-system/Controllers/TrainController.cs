@@ -1,4 +1,11 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿/******************************************************************************
+* File:     TrainController.cs
+* Brief:    This file contains the TrainController class, which manages trains
+*           in the Ticket Reservation System. The TrainController enables the
+*           creation, retrieval, modification, and deletion of train data. It
+*           also provides endpoints to list all train names and numbers.
+******************************************************************************/
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MongoDB.Driver;
 using Ticket_reservation_system.Models;
